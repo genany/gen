@@ -21,9 +21,20 @@
 1. 进入app管理列表，点击项目下载到本地，之后就跟正常开发一样了
 
 
+## Install dependencies
+
+```
+yarn
+```
+
+## Start server
+
+```
+npm start
+```
 
 
-###打包bug解决方案
+## 打包bug解决方案
 修改文件node_modules/af-webpack/lib/getConfig.js中test: /\.(js|jsx)$/
 的exclude， 记得引入path
         
