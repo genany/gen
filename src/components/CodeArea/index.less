@@ -1,0 +1,32 @@
+:global {
+  .code{
+    border: 1px solid #d9d9d9;
+    border-radius: 4px;
+    line-height: 1.5;
+    .CodeMirror-fullscreen {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        height: auto;
+        z-index: 99999;
+    }
+    .CodeMirror{height: 100%;}
+    .CodeMirror pre { padding-left: 7px; line-height: 1.5; }
+    .CodeMirror-gutters{
+      background: #fff;
+      border: none;
+    }
+    .CodeMirror pre.CodeMirror-placeholder {
+      color: #919191;
+    }
+    .CodeMirror-focused .cm-matchhighlight {
+      background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAIAAAACCAYAAABytg0kAAAAFklEQVQI12NgYGBgkKzc8x9CMDAwAAAmhwSbidEoSQAAAABJRU5ErkJggg==);
+      background-position: bottom;
+      background-repeat: repeat-x;
+    }
+    .cm-matchhighlight {background-color: lightgreen}
+    .CodeMirror-selection-highlight-scrollbar {background-color: green}
+  }
+}
