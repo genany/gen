@@ -213,7 +213,7 @@ class BasicLayout extends React.PureComponent {
               }, {
                 key: 'github',
                 title: <Icon type="github" />,
-                href: 'https://github.com/daycool',
+                href: 'https://github.com/daycool/gen',
                 blankTarget: true,
               }, {
                 key: 'gen',
