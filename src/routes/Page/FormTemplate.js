@@ -11,7 +11,9 @@ import {
 } from 'antd';
 import PageHeaderLayout from '../../layouts/PageHeaderLayout';
 import ExtraFieldConfig from '../../components/ExtraFieldConfig';
+import Attr from '../../components/Attr';
 import {uuid} from '../../utils/utils.js';
+import _ from 'lodash';
 import JSON5 from 'json5';
 
 const TreeNode = Tree.TreeNode;
@@ -24,18 +26,25 @@ const formItemLayout = {
   labelCol: {
     xs: { span: 24 },
     sm: { span: 3 },
+    md: { span: 3 },
   },
   wrapperCol: {
     xs: { span: 24 },
-    sm: { span: 12 },
-    md: { span: 10 },
+    sm: { span: 21 },
+    md: { span: 21 },
   },
 };
 
 const submitFormLayout = {
+  labelCol: {
+    xs: { span: 24 },
+    sm: { span: 3 },
+    sm: { span: 3 },
+  },
   wrapperCol: {
-    xs: { span: 24, offset: 0 },
-    sm: { span: 10, offset: 3 },
+    xs: { span: 24 },
+    sm: { span: 21 },
+    md: { span: 21 },
   },
 };
 
@@ -185,9 +194,20 @@ export default class PageTemplate extends PureComponent {
 
     this.triggerChange(template);
   }
-  changeComponent = (value, record, name, fieldRecord) => {
-    var component = this.props.component.data.list.find(item => item.id == value);
-    this.change(component.name, record, name, fieldRecord);
+  changeComponent = (value, record, name, fieldRecord) => {//验证才有fieldRecord
+    var originComponent = this.props.component.data.list.find(item => item.name == value);
+    var component = _.cloneDeep(originComponent);
+    console.log(originComponent, component , 3333333)
+    component.uuid = uuid();
+    component.extra_field = [];
+    this.change(value, record, name, fieldRecord);
+    this.change(component, record, 'component', fieldRecord);//字段得有组件
+    this.props.onChangeComponent(component, record);
+  }
+  selectedComponent = (record) => {//选中组件,用来修改组件扩展字段
+    if(!record.type) return ;
+    var component = this.props.component.data.list.find(item => item.name == record.type);
+    this.props.onChangeComponent(record.component, record);
   }
   changeRuleRow = (value, record, name, fieldRecord) => {
     const template = this.state.template;
@@ -203,26 +223,25 @@ export default class PageTemplate extends PureComponent {
   }
 
   triggerChange = (template) => {
-    this.setState({
-      template: template
-    });
+
 
     this.props.dispatch({
       type: 'page/updateTemplate',
       payload: template
     });
-
   }
 
+  // triggerComponentChange = (component) => {
+  //   this.props.onChangeComponent(component);
+  // }
+
   selectInter = (value) => {
-    let inter = null;
     const interData = {...this.props.inter.data};
-    const interFilter = interData.list.filter(item => {
+    let inter = interData.list.find(item => {
       return item.id == value;
     });
     const template = this.state.template;
-    if(interFilter.length){
-      inter = interFilter[0];
+    if(inter){
       let reqDataStr = inter.req_data || '{}';
       let resDataStr = inter.res_data;
       // console.log(reqDataStr)
@@ -230,6 +249,9 @@ export default class PageTemplate extends PureComponent {
       let fields = this.buildFeildData(reqData);
       template.content.fields = fields;
       template.inter_id = inter.id;
+    }else{
+      template.content.fields = [];
+      template.inter_id = '';
     }
   }
 
@@ -302,13 +324,13 @@ export default class PageTemplate extends PureComponent {
         render: (text, record) => {
           return (
             <TreeSelect
-              style={{ width: 300 }}
+              style={{ width: 150 }}
               dropdownStyle={{ maxHeight: 400, overflow: 'auto' }}
               treeData={componentList}
               placeholder="请选择组件"
               treeDefaultExpandAll
               defaultValue={text}
-              onChange={(value) => this.change(value, record, 'type')}
+              onChange={(value) => this.changeComponent(value, record, 'type')}
             />
           );
         }
@@ -470,29 +492,25 @@ export default class PageTemplate extends PureComponent {
               </Select>
             )}
           </FormItem>
-          <FormItem {...formItemLayoutFull} label="表单页面配置：">
+          <FormItem label="表单页面配置：">
             <Table
               columns={formFieldColumns}
               dataSource={fields}
               expandedRowRender={expandedRowValidRender}
               pagination={false}
               size="middle"
+              onRow={record => {
+                return {
+                  onClick: () => {
+                    this.selectedComponent(record);
+                  }
+                };
+              }}
             />
             <Button type="primary" onClick={this.addFormFeild} style={{marginTop: 16}}>
               添加字段
             </Button>
           </FormItem>
-          {extra_field.length ?
-            getFieldDecorator('extra_field', {
-              initialValue: extra_field,
-              rules: [{
-                required: true, message: '扩展字段',
-              }],
-            })(
-              <ExtraFieldConfig placeholder="配置扩展字段" />
-            ) :
-            '此组件没有配置项'
-        }
         </Card>
 
       </div>

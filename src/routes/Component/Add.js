@@ -134,7 +134,7 @@ export default class Add extends PureComponent {
                 initialValue: info.pid || '',
               })(
                 <Select>
-                  <Option value="0">无</Option>
+                  <Option value="">无</Option>
                   {
                     componentData.list && componentData.list.map(item => {
                       return (
@@ -153,7 +153,7 @@ export default class Add extends PureComponent {
                 }],
               })(
                 <RadioGroup>
-                  <Radio value={1} defaultChecked>是</Radio>
+                  <Radio value={1}>是</Radio>
                   <Radio value={0}>否</Radio>
                 </RadioGroup>
               )}

@@ -387,19 +387,7 @@ export default class PageTemplate extends PureComponent {
               添加字段
             </Button>
           </FormItem>
-          {extra_field.length ?
-            getFieldDecorator('extra_field', {
-              initialValue: extra_field,
-              rules: [{
-                required: true, message: '扩展字段',
-              }],
-            })(
-              <ExtraFieldConfig placeholder="配置扩展字段" />
-            ) :
-            '此组件没有配置项'
-        }
         </Card>
-
       </div>
     );
   }

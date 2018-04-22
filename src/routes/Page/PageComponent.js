@@ -13,6 +13,7 @@ import {
 } from 'antd';
 import PageHeaderLayout from '../../layouts/PageHeaderLayout';
 import ExtraFieldConfig from '../../components/ExtraFieldConfig';
+import Attr from '../../components/Attr';
 import {uuid} from '../../utils/utils.js';
 import JSON5 from 'json5';
 
@@ -111,7 +112,7 @@ export default class PageComponent extends PureComponent {
                 required: true, message: '扩展字段',
               }],
             })(
-              <ExtraFieldConfig placeholder="配置扩展字段" />
+              <Attr placeholder="配置扩展字段" />
             ) :
             '此组件没有配置项'
         }

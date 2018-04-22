@@ -10,7 +10,7 @@
  * Callback index.
  */
 
-var count = 0;
+let count = 0;
 
 /**
  * Noop function.
@@ -38,18 +38,18 @@ export default function  jsonp(url, opts, fn){
   }
   if (!opts) opts = {};
 
-  var prefix = opts.prefix || '__jp';
+  let prefix = opts.prefix || '__jp';
 
   // use the callback name that was passed if one was provided.
   // otherwise generate a unique name by incrementing our counter.
-  var id = opts.name || (prefix + (count++));
+  let id = opts.name || (prefix + (count++));
 
-  var param = opts.param || 'callback';
-  var timeout = null != opts.timeout ? opts.timeout : 60000;
-  var enc = encodeURIComponent;
-  var target = document.getElementsByTagName('script')[0] || document.head;
-  var script;
-  var timer;
+  let param = opts.param || 'callback';
+  let timeout = null != opts.timeout ? opts.timeout : 60000;
+  let enc = encodeURIComponent;
+  let target = document.getElementsByTagName('script')[0] || document.head;
+  let script;
+  let timer;
 
 
   if (timeout) {

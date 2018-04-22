@@ -88,6 +88,7 @@ export default class CodeArea extends React.Component {
     let code = this.props.value;
     let lineNumbers = false;
     let placeholder = this.props.placeholder || '请输入';
+    let readOnly = this.props.readOnly || false;
 
 
     type = type || 'jsx';
@@ -101,7 +102,7 @@ export default class CodeArea extends React.Component {
       lineWrapping: true,
       scrollbarStyle: 'simple',
       // extraKeys: {"Enter": "newlineAndIndentContinueComment"},
-      // readOnly: true`
+      readOnly: readOnly,
       extraKeys: {
         'Tab': 'emmetExpandAbbreviation',
         'Enter': 'emmetInsertLineBreak'
@@ -164,6 +165,10 @@ export default class CodeArea extends React.Component {
       this.setState({code: code});
       this.triggerChange(code);
     });
+    this.codeEditor.on('blur', () => {
+      let code = this.codeEditor.getDoc().getValue();
+      this.triggerBlur(code);
+    });
 
     // this.setCode(code);
 
@@ -187,6 +192,13 @@ export default class CodeArea extends React.Component {
     const onChange = this.props.onChange;
     if (onChange) {
       onChange(changedValue);
+    }
+  }
+  triggerBlur = (changedValue) => {
+    // Should provide an event to pass value to Form.
+    const onBlur = this.props.onBlur;
+    if (onBlur) {
+      onBlur(changedValue);
     }
   }
   render() {

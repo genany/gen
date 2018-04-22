@@ -85,11 +85,11 @@ export default class GlobalHeader extends PureComponent {
 
 
         <div className={styles.right}>
-          <a href="https://github.com/daycool/gen" target="_blank" style={{color: 'rgba(0, 0, 0, 0.65)', fontSize: '16px', 'marginRight': '50px', 'text-decoration': 'none'}}>
+          <a href="https://github.com/daycool/gen" target="_blank" style={{color: 'rgba(0, 0, 0, 0.65)', fontSize: '16px', 'marginRight': '50px', 'textDecoration': 'none'}}>
             <Icon type="github" />
             GitHub
           </a>
-          <Link to="/about" style={{color: 'rgba(0, 0, 0, 0.65)', fontSize: '16px', 'marginRight': '50px', 'text-decoration': 'none'}}>
+          <Link to="/about" style={{color: 'rgba(0, 0, 0, 0.65)', fontSize: '16px', 'marginRight': '50px', 'textDecoration': 'none'}}>
             关于Gen
           </Link>
           {currentUser.user_name ? (

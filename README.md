@@ -1,4 +1,4 @@
-
+ 您的"star"是我前进的最大动力
 
 ## What?
   Gen是generator前三个字母。
@@ -16,42 +16,33 @@
 1. 创建页面，
   1)选择页面模版(如： 表单、表格、chart),
   2)选择接口根据字段自动生成配置
-  3)如果特殊需求自定义添加组件
-  4)点击预览按钮查看页面效果（也可以保存后在查看）
+  3)选择字段使用组件，选择使用组件扩展字段并配置
+  4)如果特殊需求自定义添加组件
+  5)点击预览按钮查看页面效果（也可以保存后在查看）
 1. 进入app管理列表，点击项目下载到本地，之后就跟正常开发一样了
 
+## TODO
+1. 模版和组件扩展配置
+2. 接口可视化配置
+3. 使用electon支持本地预览开发
+4. 自定义脚手架(vue、react、bootstrap、小程序等)
+5. 可拖拽搭建页面
+6. 不限语言和框架，通过接口数据生成一切可生成的
 
-## Install dependencies
+## 演示
 
-```
-yarn
-```
+![扩展字段](http://gen.sdemo.cn/gen.gif)
 
-## Start server
+### 打包bug解决方案
 
-```
-npm start
-```
+  修改文件node_modules/af-webpack/lib/getConfig.js中test: /\.(js|jsx)$/
+  的exclude
 
+  exclude: function(xx){
+    console.log(xx)
+    var emmetioReg = /node_modules\\@emmetio/;
+    var isExclude = /node_modules/.test(xx) && !emmetioReg.test(xx);
 
-## 打包bug解决方案
-修改文件node_modules/af-webpack/lib/getConfig.js中test: /\.(js|jsx)$/
-的exclude， 记得引入path
-        
-
-exclude: function(xx){
-  var sep = path.sep;
-  console.log(xx)
-  var emmetioPath = 'node_modules' + sep + '@emmetio';
-  // var emmetioReg = new RegExp(emmetioPath);
-  var emmetioReg = /node_modules\\@emmetio/;
-  var isExclude = /node_modules/.test(xx) && !emmetioReg.test(xx);
-
-  if(!isExclude){
-    // console.log(xx, isExclude)
-
-  }
-
-  return isExclude;
-}
+    return isExclude;
+  },
 

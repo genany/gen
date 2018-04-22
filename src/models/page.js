@@ -1,4 +1,5 @@
 import { pageList, pageInfo, pageRemove, pageAdd } from '../services/api';
+import {uuid} from '../utils/utils';
 
 const initState = {
     loading: false,
@@ -55,6 +56,17 @@ export default {
          return ;
       }
       const response = yield call(pageInfo, payload);
+      //临时添加  等所有都编辑后默认都会有uuid  添加组件默认添加uuid
+      response.data.page_template.forEach(item => {
+        if(item.content && item.extra_field){
+          item.extra_field.forEach(item => {
+            item.uuid = item.uuid || uuid();
+          });
+        }
+      });
+      response.data.page_component.forEach(item => {
+        item.content.uuid = item.content.uuid || uuid();
+      });
       yield put({
         type: 'saveInfo',
         payload: response.data,

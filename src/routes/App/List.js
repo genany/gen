@@ -97,7 +97,7 @@ export default class List extends PureComponent {
           let previewUrl = 'http://scaffold.sdemo.cn/';
           return (
             <Fragment>
-              <a href={previewUrl}>预览</a>
+              <a href={previewUrl} target="_blank">预览</a>
               <Divider type="vertical" />
               <Link to={'/app/add/' + record.id}>编辑</Link>
               <Divider type="vertical" />
