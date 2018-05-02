@@ -8,6 +8,7 @@ import {
   message,
   notification,
   Popconfirm,
+  Tabs,
   Form, Input, DatePicker, Select, Button, Card, InputNumber, Radio, Icon, Tooltip,
 } from 'antd';
 import _ from 'lodash';
@@ -19,12 +20,14 @@ import TableTemplate from './TableTemplate.js';
 import PageComponent from './PageComponent.js';
 import styles from './add.less';
 import {uuid, arrToTree} from '../../utils/utils';
+import native from '../../utils/native.js';
 
 const TreeNode = TreeSelect.TreeNode;
 const FormItem = Form.Item;
 const { Option } = Select;
 const { RangePicker } = DatePicker;
 const { TextArea } = Input;
+const TabPane = Tabs.TabPane;
 
 const formItemPageLayout = {
   labelCol: {
@@ -72,9 +75,10 @@ const formItemLayoutFull = {
   },
 };
 
-@connect(({app, page, template, component, valid, inter, loading }) => ({
+@connect(({app, page, scaffold, template, component, valid, inter, loading }) => ({
   app,
   page,
+  scaffold,
   template,
   component,
   valid,
@@ -118,6 +122,10 @@ export default class Add extends PureComponent {
     });
     this.props.dispatch({
       type: 'app/list',
+      payload: {},
+    });
+    this.props.dispatch({
+      type: 'scaffold/list',
       payload: {},
     });
     this.props.dispatch({
@@ -171,7 +179,7 @@ export default class Add extends PureComponent {
     });
   }
   preview = (e) => {
-    e.preventDefault();
+    // e.preventDefault();
     this.props.form.validateFieldsAndScroll((err, values) => {
       if (!err) {
         let id = this.props.page.info.id;
@@ -183,22 +191,24 @@ export default class Add extends PureComponent {
           };
         }
 
-        if(payload.path.indexOf('/') == -1){
-          payload.path = '/' + payload.path + '/' + payload.path;
-        }else if(payload.path.lastIndexOf('/') == 0){
-          payload.path = payload.path + '/' + payload.path;
-        }else if(payload.path.indexOf('/') != 0){
-          payload.path = '/' + payload.path;
+        payload.path = '/preview/preview';
+
+        if(window.preview){
+          const appData = this.props.app.data.list.find(item => item.id == payload.app_id);
+          // const scaffoldData = this.props.scaffold.data.list.find(item => item.id == payload.scaffold_id);
+          const scaffoldData = this.props.scaffold.data.list[0];
+          window.preview(payload, appData, scaffoldData);
+          return ;
         }
 
         this.props.dispatch({
-          type: 'preview/page',
+          type: 'preview/preview',
           payload: payload,
           callback: () => {
-            message.success('保存成功');
+            // message.success('保存成功');
 
             // window.location.href = '/#/preview/preview';
-            window.open('http://scaffold.sdemo.cn/#/preview/preview');
+            // window.open('http://scaffold.sdemo.cn/#/preview/preview');
           }
         });
       }
@@ -206,6 +216,15 @@ export default class Add extends PureComponent {
   }
   cancel = ()=>{
     this.props.dispatch(routerRedux.push('/page/list'));
+  }
+  realTimePreview(){
+    if(this.realTimePreviewTimer){
+      clearTimeout(this.realTimePreviewTimer);
+      this.realTimePreviewTimer = null;
+    }
+    this.realTimePreviewTimer = setTimeout(() => {
+      this.preview();
+    }, 100);
   }
   addPageComponent = () => {
     let componentId = this.props.form.getFieldValue('component_id');
@@ -226,6 +245,7 @@ export default class Add extends PureComponent {
       type: 'page/addPageComponent',
       payload: addPageComponent,
     });
+    this.realTimePreview();
   }
   updatePageComponent = (action) => {
     let info = this.props.page.info;
@@ -240,6 +260,7 @@ export default class Add extends PureComponent {
       type: 'page/updatePageComponent',
       payload: action.payload,
     });
+    this.realTimePreview();
   }
   changePageTemplateTips = () => {
     let templateId = this.props.form.getFieldValue('template_id');
@@ -250,6 +271,7 @@ export default class Add extends PureComponent {
      message: '更换模板数据不能恢复',
      // description: 'This is the content of the notification. This is the content of the notification. This is the content of the notification.',
    });
+    this.realTimePreview();
   }
   addPageTemplate = (templateId) => {
     templateId = templateId || this.props.form.getFieldValue('template_id');
@@ -277,6 +299,7 @@ export default class Add extends PureComponent {
       type: 'page/addPageTemplate',
       payload: addPageTemplate,
     });
+    this.realTimePreview();
   }
   updatePageTemplate = (action) => {
     let info = this.props.page.info;
@@ -293,6 +316,7 @@ export default class Add extends PureComponent {
       type: 'page/updatePageTemplate',
       payload: action.payload,
     });
+    this.realTimePreview();
   }
   onChangeComponent = (component, type, id) => {
     // let templateId = this.props.form.getFieldValue('template_id');
@@ -306,6 +330,7 @@ export default class Add extends PureComponent {
     });
 
     this.setState({component, type, id, filterExtraField});
+    this.realTimePreview();
     // this.getNotUseComponentExtraField();
   }
   changeTemplateExtraField = (extraField) => {
@@ -318,6 +343,7 @@ export default class Add extends PureComponent {
       type: 'page/updatePageTemplate',
       payload: template,
     });
+    this.realTimePreview();
   }
   changeComponentExtraField = (extraField) => {
     let component = this.state.component;
@@ -337,7 +363,48 @@ export default class Add extends PureComponent {
       type: 'page/updatePageTemplate',
       payload: template,
     });
+    this.realTimePreview();
   }
+  addComponentExtraFieldConfig = (extraFieldId) => {
+    const component = this.state.component;
+    const filterExtraField = this.state.filterExtraField;
+    // const orignComponent = this.props.component.data.list.find(item => item.id == component.id);
+
+    const extraField = filterExtraField.find(item => item.id == extraFieldId);
+    const newFilterExtraField = filterExtraField.filter(item => item.id != extraFieldId);
+
+
+    component.extra_field.push(extraField);
+    this.setState({
+      component: {
+        ...component
+      },
+      filterExtraField: newFilterExtraField,
+    });
+    this.realTimePreview();
+  }
+
+  getPreviewIframeUrl = () => {
+    // if(window.location.host == 'gen.sdemo.cn'){
+    //   return 'http://scaffold.sdemo.cn/#/preview/preview';
+    // }else{
+    //   return 'http://localhost:8000/#/preview/preview';
+    // }
+    return native.getPreviewPageUrl(this.props.match.params.app_id, '/preview/preview');
+  }
+
+  getNotUseComponentExtraField = () => {
+    const component = this.state.component;
+    const orignComponent = this.props.component.data.list.find(item => item.id == component.id);
+
+    const filterExtraField = orignComponent.extra_field.filter(item => {
+      return !component.extra_field.find(item2 => {item.name == item2.name});
+    });
+
+    this.setState({filterExtraField});
+    // return filterExtraField;
+  }
+
   renderTemplate = (item) => {
     const { page: {info}, component, valid, inter, submitting } = this.props;
     let templateId = this.props.form.getFieldValue('template_id');
@@ -398,36 +465,6 @@ export default class Add extends PureComponent {
       </Card>
     );
   }
-  addComponentExtraFieldConfig = (extraFieldId) => {
-    const component = this.state.component;
-    const filterExtraField = this.state.filterExtraField;
-    // const orignComponent = this.props.component.data.list.find(item => item.id == component.id);
-
-    const extraField = filterExtraField.find(item => item.id == extraFieldId);
-    const newFilterExtraField = filterExtraField.filter(item => item.id != extraFieldId);
-
-
-    component.extra_field.push(extraField);
-    this.setState({
-      component: {
-        ...component
-      },
-      filterExtraField: newFilterExtraField,
-    });
-
-  }
-
-  getNotUseComponentExtraField = () => {
-    const component = this.state.component;
-    const orignComponent = this.props.component.data.list.find(item => item.id == component.id);
-
-    const filterExtraField = orignComponent.extra_field.filter(item => {
-      return !component.extra_field.find(item2 => {item.name == item2.name});
-    });
-
-    this.setState({filterExtraField});
-    // return filterExtraField;
-  }
 
   renderComponentExtraField = () => {
     const component = this.state.component;
@@ -483,150 +520,156 @@ export default class Add extends PureComponent {
     });
 
     return (
-      <Row gutter={6}>
-        <Col className="gutter-row" span={18}>
-          <Card bordered={false}>
-            <Form
-              onSubmit={this.handleSubmit}
-              hideRequiredMark
-              style={{ marginTop: 8 }}
-            >
-              <Row gutter={24}>
-                <Col span={8}>
-                  <FormItem {...formItemPageLayout} label="所属App：">
-                    {getFieldDecorator('app_id', {
-                      initialValue: info.app_id,
-                      rules: [{
-                        required: true, message: '请选择所属App',
-                      }],
+      <Tabs defaultActiveKey="1"  style={{width: '100%', height: '100%', marginTop: -25}}>
+        <TabPane tab="编辑" key="1">
+          <Row gutter={6}>
+            <Col className="gutter-row" span={18}>
+              <Card bordered={false}>
+                <Form
+                  onSubmit={this.handleSubmit}
+                  hideRequiredMark
+                  style={{ marginTop: 8 }}
+                >
+                  <Row gutter={24}>
+                    <Col span={8}>
+                      <FormItem {...formItemPageLayout} label="所属App：">
+                        {getFieldDecorator('app_id', {
+                          initialValue: info.app_id,
+                          rules: [{
+                            required: true, message: '请选择所属App',
+                          }],
+                        })(
+                          <Select placeholder="请选择所属App" >
+                            <Option value="">请选择</Option>
+                            {appData.list.map(item => {
+                              return (
+                                <Option value={item.id} key={item.id}>{item.label}</Option>
+                              )
+                            })}
+                          </Select>
+                        )}
+                      </FormItem>
+                    </Col>
+                    <Col span={8}>
+                      <FormItem {...formItemPageLayout} label="名称：">
+                        {getFieldDecorator('label', {
+                          initialValue: info.label,
+                          rules: [{
+                            required: true, message: '请输入名称',
+                          }],
+                        })(
+                          <Input placeholder="请输入名称" />
+                        )}
+                      </FormItem>
+                    </Col>
+                    <Col span={8}>
+                      <FormItem {...formItemPageLayout} label="Path：">
+                        {getFieldDecorator('path', {
+                          initialValue: info.path,
+                          rules: [{
+                            required: true, message: '请输入Path',
+                            pattern: /^(\/)?[a-zA-Z]+([a-zA-Z0-9_\/]*)$/, message: '请输入以字母开头,只包含字母、数字、下划线字符',
+                          }],
+                        })(
+                          <Input placeholder="请输入Path" />
+                        )}
+                      </FormItem>
+                    </Col>
+                  </Row>
+                  <FormItem {...formItemLayout} label="选择页面模版：">
+                    <Row gutter={8}>
+                      <Col span={18}>
+                        {getFieldDecorator('template_id', {
+                          initialValue: info.page_template.length ? info.page_template[0].template_id : info.template_id,
+                        })(
+                          <Select placeholder="请选择要添加的页面模版" onChange={value => this.addPageTemplate(value)} onFocus={this.changePageTemplateTips} >
+                            {templateData.list.map(item => {
+                              return (
+                                <Option value={item.id} key={item.id}>{item.label}</Option>
+                              )
+                            })}
+                          </Select>
+                        )}
+                      </Col>
+                    </Row>
+                  </FormItem>
+
+                  <FormItem {...formItemLayout} label="页面模版：" style={{display: 'none'}}>
+                    {getFieldDecorator('page_template', {
+                      initialValue: info.page_template,
                     })(
-                      <Select placeholder="请选择所属App" >
-                        <Option value="">请选择</Option>
-                        {appData.list.map(item => {
-                          return (
-                            <Option value={item.id} key={item.id}>{item.label}</Option>
-                          )
-                        })}
-                      </Select>
+                      <Input placeholder="页面模版" />
                     )}
                   </FormItem>
-                </Col>
-                <Col span={8}>
-                  <FormItem {...formItemPageLayout} label="名称：">
-                    {getFieldDecorator('label', {
-                      initialValue: info.label,
-                      rules: [{
-                        required: true, message: '请输入名称',
-                      }],
+                  {info.page_template.map(item => {
+                    return this.renderTemplate(item)
+                  })}
+                  <FormItem {...formItemLayout} label="添加组件：">
+                    <Row>
+                      <Col span={18}>
+                        {getFieldDecorator('component_id', {
+                          initialValue: '',
+                        })(
+                          <TreeSelect
+                            style={{ width: 300 }}
+                            dropdownStyle={{ maxHeight: 400, overflow: 'auto' }}
+                            treeData={componentData.treeData}
+                            placeholder="请选择组件"
+                            treeDefaultExpandAll
+                          />
+
+                        )}
+
+                      </Col>
+                      <Col span={6}>
+                        <Button onClick={this.addPageComponent} style={{width: '100%'}}>添加</Button>
+                      </Col>
+                    </Row>
+                  </FormItem>
+                  <FormItem {...formItemLayout} label="组件：" style={{display: 'none'}}>
+                    {getFieldDecorator('page_component', {
+                      initialValue: info.page_component,
                     })(
-                      <Input placeholder="请输入名称" />
+                      <Input placeholder="组件" />
                     )}
                   </FormItem>
-                </Col>
-                <Col span={8}>
-                  <FormItem {...formItemPageLayout} label="Path：">
-                    {getFieldDecorator('path', {
-                      initialValue: info.path,
-                      rules: [{
-                        required: true, message: '请输入Path',
-                      }],
-                    })(
-                      <Input placeholder="请输入Path" />
-                    )}
+                  {info.page_component.map(item => {
+                    return (
+                      <PageComponent
+                        key={item.id}
+                        valid={valid}
+                        inter={inter}
+                        component={item}
+                        dispatch={(args)=> {this.updatePageComponent(args)}}
+                      ></PageComponent>
+                    )
+                  })}
+
+                  <FormItem {...submitFormLayout} style={{ marginTop: 32 }}>
+                    <Button type="primary" htmlType="submit" loading={submitting}>
+                      保存
+                    </Button>
+                    <Popconfirm title="修改不会保存，确认取消吗？" onConfirm={this.cancel}>
+                      <Button type="danger"  style={{marginLeft: 16}}>
+                        取消
+                      </Button>
+                    </Popconfirm>
+
                   </FormItem>
-                </Col>
-              </Row>
-              <FormItem {...formItemLayout} label="选择页面模版：">
-                <Row gutter={8}>
-                  <Col span={18}>
-                    {getFieldDecorator('template_id', {
-                      initialValue: info.page_template.length ? info.page_template[0].template_id : info.template_id,
-                    })(
-                      <Select placeholder="请选择要添加的页面模版" onChange={value => this.addPageTemplate(value)} onFocus={this.changePageTemplateTips} >
-                        {templateData.list.map(item => {
-                          return (
-                            <Option value={item.id} key={item.id}>{item.label}</Option>
-                          )
-                        })}
-                      </Select>
-                    )}
-                  </Col>
-                </Row>
-              </FormItem>
+                </Form>
+              </Card>
+            </Col>
+            <Col className="gutter-row" span={6}>
+              {this.renderTemplateExtraField()}
+              {this.renderComponentExtraField()}
+            </Col>
+          </Row>
+        </TabPane>
+        <TabPane tab="预览" key="2" forceRender={true} style={{width: '100%', height: '800px'}}>
+          <iframe src={this.getPreviewIframeUrl()} allowfullscreen sandbox="allow-scripts allow-pointer-lock allow-same-origin allow-popups allow-modals allow-forms" allowtransparency="true" frameborder="0" className="preview" style={{width: '100%', height: '100%'}}></iframe>
+        </TabPane>
+      </Tabs>
 
-              <FormItem {...formItemLayout} label="页面模版：" style={{display: 'none'}}>
-                {getFieldDecorator('page_template', {
-                  initialValue: info.page_template,
-                })(
-                  <Input placeholder="页面模版" />
-                )}
-              </FormItem>
-              {info.page_template.map(item => {
-                return this.renderTemplate(item)
-              })}
-              <FormItem {...formItemLayout} label="添加组件：">
-                <Row>
-                  <Col span={18}>
-                    {getFieldDecorator('component_id', {
-                      initialValue: '',
-                    })(
-                      <TreeSelect
-                        style={{ width: 300 }}
-                        dropdownStyle={{ maxHeight: 400, overflow: 'auto' }}
-                        treeData={componentData.treeData}
-                        placeholder="请选择组件"
-                        treeDefaultExpandAll
-                      />
-
-                    )}
-
-                  </Col>
-                  <Col span={6}>
-                    <Button onClick={this.addPageComponent} style={{width: '100%'}}>添加</Button>
-                  </Col>
-                </Row>
-              </FormItem>
-              <FormItem {...formItemLayout} label="组件：" style={{display: 'none'}}>
-                {getFieldDecorator('page_component', {
-                  initialValue: info.page_component,
-                })(
-                  <Input placeholder="组件" />
-                )}
-              </FormItem>
-              {info.page_component.map(item => {
-                return (
-                  <PageComponent
-                    key={item.id}
-                    valid={valid}
-                    inter={inter}
-                    component={item}
-                    dispatch={(args)=> {this.updatePageComponent(args)}}
-                  ></PageComponent>
-                )
-              })}
-
-              <FormItem {...submitFormLayout} style={{ marginTop: 32 }}>
-                <Button type="primary" htmlType="submit" loading={submitting}>
-                  保存
-                </Button>
-                <Button onClick={this.preview}  style={{marginLeft: 16}}>
-                  预览
-                </Button>
-                <Popconfirm title="修改不会保存，确认取消吗？" onConfirm={this.cancel}>
-                  <Button type="danger"  style={{marginLeft: 16}}>
-                    取消
-                  </Button>
-                </Popconfirm>
-
-              </FormItem>
-            </Form>
-          </Card>
-        </Col>
-        <Col className="gutter-row" span={6}>
-          {this.renderTemplateExtraField()}
-          {this.renderComponentExtraField()}
-        </Col>
-      </Row>
     )
   }
 

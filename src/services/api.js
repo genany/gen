@@ -18,6 +18,14 @@ export async function previewPage(params) {
     }
   });
 }
+export async function preview(params) {
+  return request(`/api/preview/preview`, {
+    method: 'post',
+    body: {
+      ...params,
+    }
+  });
+}
 
 
 export async function appList(params) {

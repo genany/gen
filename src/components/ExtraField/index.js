@@ -12,7 +12,6 @@ import {
 } from 'antd';
 import JSON5 from 'json5';
 import _ from 'lodash';
-import apiCheck from 'api-check';
 
 const FormItem = Form.Item;
 const Option = Select.Option;

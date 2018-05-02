@@ -2,9 +2,10 @@ import React, { PureComponent, Fragment } from 'react';
 import { connect } from 'dva';
 import { Link } from "react-router-dom";
 import moment from 'moment';
-import {Popconfirm , notification, Row, Col, Card, Form, Input, Select, Icon, Button, Dropdown, Menu, InputNumber, DatePicker, Modal, message, Badge, Divider } from 'antd';
+import {Spin, Popconfirm , notification, Row, Col, Card, Form, Input, Select, Icon, Button, Dropdown, Menu, InputNumber, DatePicker, Modal, message, Badge, Divider } from 'antd';
 import StandardTable from '../../components/StandardTable';
 import PageHeaderLayout from '../../layouts/PageHeaderLayout';
+import native from '../../utils/native.js';
 
 import styles from './List.less';
 
@@ -94,18 +95,28 @@ export default class List extends PureComponent {
         render: (text, record, index) => {
           // console.log(record)
           // let previewUrl = window.location.protocol + '//' + window.location.host + '/scaffold/' + record.scaffold.name;
-          let previewUrl = 'http://scaffold.sdemo.cn/';
+          // let previewUrl = 'http://scaffold.sdemo.cn/';
+          let previewUrl = this.getPreviewUrl(record);
+
           return (
             <Fragment>
               <a href={previewUrl} target="_blank">预览</a>
               <Divider type="vertical" />
               <Link to={'/app/add/' + record.id}>编辑</Link>
               <Divider type="vertical" />
-              <a onClick={() => this.onDownload(record)}>下载</a>
-              <Divider type="vertical" />
               <Popconfirm title="确认删除吗？" onConfirm={() => this.onDelete(record, index)}>
                 <a href="#">删除</a>
               </Popconfirm>
+              <Divider type="vertical" />
+              <a onClick={() => this.onDownload(record)}>下载</a>
+              <Divider type="vertical" />
+              <a onClick={() => this.onInstall(record)}>安装依赖</a>
+              <Divider type="vertical" />
+              <a onClick={() => this.onStart(record)}>启动</a>
+              <Divider type="vertical" />
+              <a onClick={() => this.onOpenTermimal(record)}>打开命令行</a>
+              <Divider type="vertical" />
+              <a onClick={() => this.onOpenDir(record)}>打开目录</a>
             </Fragment>
           );
         },
@@ -223,6 +234,9 @@ export default class List extends PureComponent {
     formWrapElem.innerHTML = formStr;
     formWrapElem.style.display = 'none';
     var sdemoDownloadForm = document.getElementById('sdemo-download-form-' + id);
+
+    native.selectDir(item.id);
+
     sdemoDownloadForm.submit();
 
     var sdemoDownloadIframe = document.getElementById('download-iframe-' + id);
@@ -259,6 +273,25 @@ export default class List extends PureComponent {
     //     message.success('删除成功');
     //   },
     // });
+  }
+  getPreviewUrl = (item) => {
+    return native.getPreviewUrl(item.id);
+  }
+  onInstall = (item, index) => {
+      native.installApp(item.id, () => {
+        message.success('安装依赖成功');
+      });
+  }
+  onStart = (item, index) => {
+      native.startApp(item.id, () => {
+        message.success('启动成功');
+      });
+  }
+  onOpenTermimal = (item, index) => {
+      native.openTermimal(item.id);
+  }
+  onOpenDir = (item, index) => {
+      native.openDir(item.id);
   }
   onDelete = (item, index) => {
     const {dispatch} = this.props;

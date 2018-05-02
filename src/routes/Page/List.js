@@ -5,6 +5,7 @@ import moment from 'moment';
 import {Popconfirm , Row, Col, Card, Form, Input, Select, Icon, Button, Dropdown, Menu, InputNumber, DatePicker, Modal, message, Badge, Divider } from 'antd';
 import StandardTable from '../../components/StandardTable';
 import PageHeaderLayout from '../../layouts/PageHeaderLayout';
+import native from '../../utils/native.js';
 
 import styles from './List.less';
 
@@ -67,9 +68,11 @@ export default class List extends PureComponent {
           let pid = record.pid || 0;
           let params = '/' + app_id + '/' + id + '/' + pid;
 
+          let previewUrl = this.getPreviewUrl(record);
+
           return (
             <Fragment>
-              <a href={this.getPreviewUrl(record)} target="_blank">预览</a>
+              <a href={previewUrl} target="_blank">预览</a>
               <Divider type="vertical" />
               <Link to={'/page/add' + params}>编辑</Link>
               <Divider type="vertical" />
@@ -93,14 +96,15 @@ export default class List extends PureComponent {
     });
   }
 
-  getPreviewUrl(record){
-    let scaffold = this.props.scaffold.data.list.find(item => item.id == record.app.scaffold_id);
-    let previewUrl = '';
-    if(scaffold){
-      // previewUrl = window.location.protocol + '//' + window.location.host + '/scaffold/' + scaffold.name + '/' + record.path;
-      previewUrl = 'http://scaffold.sdemo.cn/#' + record.path;
-    }
-    return previewUrl;
+  getPreviewUrl(item){
+    // let scaffold = this.props.scaffold.data.list.find(item => item.id == item.app.scaffold_id);
+    // let previewUrl = '';
+    // if(scaffold){
+    //   // previewUrl = window.location.protocol + '//' + window.location.host + '/scaffold/' + scaffold.name + '/' + item.path;
+    //   previewUrl = 'http://scaffold.sdemo.cn/#' + item.path;
+    // }
+    // return previewUrl;
+    return native.getPreviewPageUrl(item.app_id, item.path);
   }
 
   handleStandardTableChange = (pagination, filtersArg, sorter) => {
