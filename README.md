@@ -1,4 +1,4 @@
- 您的"star"是我前进的最大动力
+如果您对此项目感兴趣欢迎 [star](https://github.com/daycool/gen)，如果您对有问题和建议欢迎 [issues](https://github.com/daycool/gen/issues/new)
 
 ## What?
   Gen是generator前三个字母。
@@ -24,7 +24,7 @@
 ## TODO
 1. 模版和组件扩展配置
 2. 接口可视化配置
-3. 使用electon支持本地预览开发
+3. 使用electon支持本地预览开发 [辅助工具下载](https://pan.baidu.com/s/1J-E-k-MdbRwGL-Kdsglr5A#list/path=%2Fgen) 
 4. 自定义脚手架(vue、react、bootstrap、小程序等)
 5. 可拖拽搭建页面
 6. 不限语言和框架，通过接口数据生成一切可生成的
@@ -38,11 +38,10 @@
   修改文件node_modules/af-webpack/lib/getConfig.js中test: /\.(js|jsx)$/
   的exclude
 
-  exclude: function(xx){
-    console.log(xx)
-    var emmetioReg = /node_modules\\@emmetio/;
-    var isExclude = /node_modules/.test(xx) && !emmetioReg.test(xx);
-
-    return isExclude;
-  },
+    exclude: function(xx){
+      console.log(xx)
+      var emmetioReg = /node_modules\\@emmetio/;
+      var isExclude = /node_modules/.test(xx) && !emmetioReg.test(xx);
+      return isExclude;
+    },
 
