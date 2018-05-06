@@ -1,5 +1,5 @@
 import React, { PureComponent } from 'react';
-import { Menu, Icon, Spin, Tag, Dropdown, Avatar, Divider, Tooltip } from 'antd';
+import { Menu, Icon, Spin, Tag, Dropdown, Avatar, Divider, Tooltip, Modal, Button, Badge} from 'antd';
 import moment from 'moment';
 import groupBy from 'lodash/groupBy';
 import Debounce from 'lodash-decorators/debounce';
@@ -7,8 +7,31 @@ import { Link } from 'dva/router';
 import NoticeIcon from '../NoticeIcon';
 import HeaderSearch from '../HeaderSearch';
 import styles from './index.less';
+import native from '../../utils/native.js';
 
 export default class GlobalHeader extends PureComponent {
+  state = {
+    isShowLog: false,
+    logs: '',
+    logCount: 0,
+  }
+  componentDidMount(){
+    setTimeout(() => {
+      if(native.isNativeEnable()){
+        native.getLog(data => {
+          let logs = this.state.logs;
+          this.setState({
+            logCount: ++ this.state.logCount,
+            logs: logs + '<br/>' + data
+          });
+        });
+      }else{
+        this.setState({
+          logs: '请安装辅助工具在查看'
+        });
+      }
+    }, 1 * 1000);
+  }
   componentWillUnmount() {
     this.triggerResizeEvent.cancel();
   }
@@ -50,6 +73,24 @@ export default class GlobalHeader extends PureComponent {
     event.initEvent('resize', true, false);
     window.dispatchEvent(event);
   }
+  showLogDialog = () => {
+    this.setState({
+       isShowLog: true,
+     });
+  }
+   handleOk = (e) => {
+     console.log(e);
+     this.setState({
+       isShowLog: false,
+     });
+   }
+   handleCancel = (e) => {
+     console.log(e);
+     this.setState({
+       isShowLog: false,
+     });
+   }
+
   render() {
     const {
       currentUser, collapsed, fetchingNotices, isMobile, logo,
@@ -92,6 +133,13 @@ export default class GlobalHeader extends PureComponent {
           <Link to="/about" style={{color: 'rgba(0, 0, 0, 0.65)', fontSize: '16px', 'marginRight': '50px', 'textDecoration': 'none'}}>
             关于Gen
           </Link>
+
+          <a onClick={this.showLogDialog} href="javascript:;" style={{color: 'rgba(0, 0, 0, 0.65)', fontSize: '16px', 'marginRight': '50px', 'textDecoration': 'none'}}>
+            <Badge count={this.state.logCount}  overflowCount={999} offset={{x: 10}}>
+            <span style={{paddingRight: 10}}>日志</span>
+            </Badge>
+          </a>
+
           {currentUser.user_name ? (
             <Dropdown overlay={menu}>
               <span className={`${styles.action} ${styles.account}`}>
@@ -101,6 +149,14 @@ export default class GlobalHeader extends PureComponent {
             </Dropdown>
           ) : <Spin size="small" style={{ marginLeft: 8 }} />}
         </div>
+        <Modal
+          title="日志"
+          visible={this.state.isShowLog}
+          onOk={this.handleOk}
+          onCancel={this.handleCancel}
+        >
+          <div dangerouslySetInnerHTML={{ __html: this.state.logs }} />
+        </Modal>
       </div>
     );
   }

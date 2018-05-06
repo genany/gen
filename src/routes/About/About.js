@@ -99,7 +99,7 @@ export default class BasicForms extends PureComponent {
           <ol>
           <li>模版和组件扩展配置</li>
           <li>接口可视化配置</li>
-          <li>使用electon支持本地预览开发 <a href="https://pan.baidu.com/s/1J-E-k-MdbRwGL-Kdsglr5A#list/path=%2Fgen">辅助工具下载</a></li>
+          <li>使用electon支持本地预览开发 <a href="https://pan.baidu.com/s/1J-E-k-MdbRwGL-Kdsglr5A#list/path=%2Fgen" target="_blank">辅助工具下载</a></li>
           <li>自定义脚手架(vue、react、bootstrap、小程序等)</li>
           <li>可拖拽搭建页面</li>
           <li>不限语言和框架，通过接口数据生成一切可生成的</li>

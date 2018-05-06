@@ -14,13 +14,21 @@ function isNativeEnable(){
 function checkNativeEnable(){
   let enable = isNativeEnable();
   if(!enable){
-    message.warning('辅助工具即将面世请稍后使用');
+    notification.warning({
+      message: '请安装辅助工具',
+      description: (<a href="https://pan.baidu.com/s/1J-E-k-MdbRwGL-Kdsglr5A#list/path=%2Fgen" target="_blank">辅助工具下载</a>),
+    });
   }
   return enable;
 }
 
 const native = {
   isNativeEnable: isNativeEnable,
+  getProject: function(id){
+    if(checkNativeEnable()){
+      return window.getProject(id);
+    }
+  },
   getPreviewUrl: function(id){
     if(isNativeEnable()){
       return window.getPreviewUrl(id);
@@ -37,7 +45,7 @@ const native = {
   },
   selectDir: function(id){
     if(checkNativeEnable()){
-      window.selectDir(id);
+      return window.selectDir(id);
     }
   },
   openDir: function(id){
@@ -60,9 +68,9 @@ const native = {
       window.openTermimal(id);
     }
   },
-  showLog: function(id){
+  getLog: function(id){
     if(checkNativeEnable()){
-      window.showLog(id);
+      window.getLog(id);
     }
   }
 }

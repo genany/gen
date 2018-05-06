@@ -34,6 +34,11 @@ export default class List extends PureComponent {
         key: 'name',
       },
       {
+        dataIndex: 'projectPath',
+        title: '本地路径',
+        key: 'projectPath',
+      },
+      {
         dataIndex: 'label',
         title: '接口baseUrl',
         key: 'label',
@@ -92,6 +97,7 @@ export default class List extends PureComponent {
       {
         title: '操作',
         key: 'action',
+        width: 200,
         render: (text, record, index) => {
           // console.log(record)
           // let previewUrl = window.location.protocol + '//' + window.location.host + '/scaffold/' + record.scaffold.name;
@@ -102,19 +108,19 @@ export default class List extends PureComponent {
             <Fragment>
               <a href={previewUrl} target="_blank">预览</a>
               <Divider type="vertical" />
+              <a onClick={() => this.onDownload(record)}>下载</a>
+              <Divider type="vertical" />
               <Link to={'/app/add/' + record.id}>编辑</Link>
               <Divider type="vertical" />
               <Popconfirm title="确认删除吗？" onConfirm={() => this.onDelete(record, index)}>
                 <a href="#">删除</a>
               </Popconfirm>
-              <Divider type="vertical" />
-              <a onClick={() => this.onDownload(record)}>下载</a>
-              <Divider type="vertical" />
+
               <a onClick={() => this.onInstall(record)}>安装依赖</a>
               <Divider type="vertical" />
-              <a onClick={() => this.onStart(record)}>启动</a>
-              <Divider type="vertical" />
               <a onClick={() => this.onOpenTermimal(record)}>打开命令行</a>
+              <Divider type="vertical" />
+              <a onClick={() => this.onStart(record)}>启动</a>
               <Divider type="vertical" />
               <a onClick={() => this.onOpenDir(record)}>打开目录</a>
             </Fragment>
@@ -235,7 +241,19 @@ export default class List extends PureComponent {
     formWrapElem.style.display = 'none';
     var sdemoDownloadForm = document.getElementById('sdemo-download-form-' + id);
 
-    native.selectDir(item.id);
+    var projectPath = native.selectDir(item.id);
+    if(projectPath){
+      this.props.dispatch({
+        type: 'app/updateProjectPath',
+        payload: {
+          id: item.id,
+          projectPath,
+        },
+        callback: () => {
+
+        },
+      });
+    }
 
     sdemoDownloadForm.submit();
 
@@ -262,7 +280,7 @@ export default class List extends PureComponent {
 
     setTimeout(function(){
       sdemoDownloadForm.parentNode.parentNode.removeChild(sdemoDownloadForm.parentNode);
-    }, 2000);
+    }, 6 * 1000);
 
     // dispatch({
     //   type: 'app/download失败，',
