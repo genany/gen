@@ -61,17 +61,7 @@ const formItemLayoutFull = {
 export default class Add extends PureComponent {
 
   componentWillReceiveProps(nextProps) {
-    if ('match' in nextProps) {
-      const id = nextProps.match.params.id;
-      if(this.props.match.params.id != id){
-        this.props.dispatch({
-          type: 'scaffold/info',
-          payload: {
-            id: id,
-          },
-        });
-      }
-    }
+
   }
   componentDidMount(){
     let id = this.props.match.params.id;
@@ -228,11 +218,21 @@ export default class Add extends PureComponent {
                 <CodeArea placeholder="菜单模板名称" />
               )}
             </FormItem>
-            <FormItem {...formItemLayoutFull} label="状态Data模板：">
+            <FormItem {...formItemLayout} label="Store目录：">
+              {getFieldDecorator('store_dir', {
+                initialValue: info.store_dir,
+                 rules: [{
+                   required: true, message: '请输入Store目录',
+                 }],
+               })(
+                <Input placeholder="请输入Store目录" />
+              )}
+            </FormItem>
+            <FormItem {...formItemLayoutFull} label="Store模板：">
               {getFieldDecorator('store_template', {
                 initialValue: info.store_template,
                 rules: [{
-                  required: true, message: '请输入Data模板',
+                  required: true, message: '请输入Store模板',
                 }],
               })(
                 <CodeArea placeholder="Data模板名称" />
@@ -256,6 +256,26 @@ export default class Add extends PureComponent {
                  }],
                })(
                 <Input placeholder="请输入Store目录" />
+              )}
+            </FormItem>
+            <FormItem {...formItemLayout} label="Service模版：">
+              {getFieldDecorator('service_template', {
+                initialValue: info.service_template,
+                 rules: [{
+                   required: true, message: '输入Service模版',
+                 }],
+               })(
+                <CodeArea placeholder="输入Service模版" />
+              )}
+            </FormItem>
+            <FormItem {...formItemLayout} label="Service目录：">
+              {getFieldDecorator('service_dir', {
+                initialValue: info.service_dir,
+                 rules: [{
+                   required: true, message: '输入Service目录',
+                 }],
+               })(
+                <Input placeholder="请输入Service目录" />
               )}
             </FormItem>
 

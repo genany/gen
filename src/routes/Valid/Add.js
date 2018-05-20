@@ -55,17 +55,7 @@ const formItemLayoutFull = {
 @Form.create()
 export default class BasicForms extends PureComponent {
   componentWillReceiveProps(nextProps) {
-    if ('match' in nextProps) {
-      const id = nextProps.match.params.id;
-      if(this.props.match.params.id != id){
-        this.props.dispatch({
-          type: 'valid/info',
-          payload: {
-            id: id,
-          },
-        });
-      }
-    }
+
   }
   componentDidMount(){
     let id = this.props.match.params.id;

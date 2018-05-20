@@ -62,17 +62,7 @@ const formItemLayoutFull = {
 @Form.create()
 export default class Add extends PureComponent {
   componentWillReceiveProps(nextProps) {
-    if ('match' in nextProps) {
-      const id = nextProps.match.params.id;
-      if(this.props.match.params.id != id){
-        this.props.dispatch({
-          type: 'app/info',
-          payload: {
-            id: id,
-          },
-        });
-      }
-    }
+
   }
   componentDidMount(){
     let id = this.props.match.params.id;

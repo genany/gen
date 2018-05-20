@@ -64,7 +64,16 @@ export default class List extends PureComponent {
         title: 'Store目录',
         key: 'store_dir',
       },
-
+      // {
+      //   dataIndex: 'service_template',
+      //   title: 'service模版',
+      //   key: 'service_template',
+      // },
+      // {
+      //   dataIndex: 'service_dir',
+      //   title: 'service目录',
+      //   key: 'service_dir',
+      // },
       {
         title: '操作',
         key: 'action',

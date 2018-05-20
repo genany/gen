@@ -1,11 +1,5 @@
 import {notification, message} from 'antd';
 
-export function fixedZero(val) {
-  if(window.selectDir){
-    selectDir();
-  }
-}
-
 function isNativeEnable(){
   let enable = !!window.selectDir && !!window.window.startApp && !!window.installApp;
   return enable;
@@ -22,11 +16,45 @@ function checkNativeEnable(){
   return enable;
 }
 
+
 const native = {
   isNativeEnable: isNativeEnable,
+  checkNativeEnable: checkNativeEnable,
+  checkIsStart: function(id){
+
+  },
+  isEnablePreview: function(id){
+    if(isNativeEnable()){
+      if(this.checkIsDownloadProject(id)){
+        return true;
+      }
+    }
+    return false;
+  },
+  checkIsDownloadProject: function(id){
+    let project = this.getProject(id);
+    let isDownloaded = !! (project && project.projectPath);
+    if(!isDownloaded){
+      message.warning({
+        message: '请先下载app到本地',
+      });
+    }
+
+    return isDownloaded;
+  },
   getProject: function(id){
     if(checkNativeEnable()){
       return window.getProject(id);
+    }
+  },
+  preview: function(pageData, appData, scaffoldData, interData, cb){
+    if(this.isEnablePreview(pageData.app_id)){
+      window.preview(pageData, appData, scaffoldData, interData, cb);
+    }
+  },
+  savePage: function(pageData, appData, scaffoldData, interData, cb){
+    if(this.isEnablePreview(pageData.app_id)){
+      window.savePage(pageData, appData, scaffoldData, interData, cb);
     }
   },
   getPreviewUrl: function(id){
@@ -50,21 +78,33 @@ const native = {
   },
   openDir: function(id){
     if(checkNativeEnable()){
+      if(!this.checkIsDownloadProject(id)){
+        return ;
+      }
       window.openDir(id);
     }
   },
   startApp: function(id){
     if(checkNativeEnable()){
+      if(!this.checkIsDownloadProject(id)){
+        return ;
+      }
       window.startApp(id);
     }
   },
   installApp: function(id){
     if(checkNativeEnable()){
+      if(!this.checkIsDownloadProject(id)){
+        return ;
+      }
       window.installApp(id);
     }
   },
   openTermimal: function(id){
     if(checkNativeEnable()){
+      if(!this.checkIsDownloadProject(id)){
+        return ;
+      }
       window.openTermimal(id);
     }
   },

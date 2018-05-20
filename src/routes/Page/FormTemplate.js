@@ -100,17 +100,29 @@ export default class PageTemplate extends PureComponent {
     });
   }
 
+  getDefaultField = (name, defaultValue) => {
+    const componentData = this.props.component.data;
+    const defaultFieldType = 'input';
+    const defaultField = componentData.list.find(item => item.name == 'input');
+    const field = {
+      name: name || '',
+      label: '',
+      type: defaultFieldType,
+      component: {
+        ...defaultField,
+        extra_field: []
+      },
+      placeholder: '',
+      default_value: defaultValue || '',
+      rules: [],
+    };
+    return field;
+  }
+
   addFormFeild = () => {
     const template = {...this.state.template};
     const fields = template.content.fields;
-    const field = {
-      name: '',
-      label: '',
-      type: '',
-      placeholder: '',
-      default_value: '',
-      rules: [],
-    };
+    const field = this.getDefaultField();
 
     fields.push(field);
 
@@ -256,17 +268,13 @@ export default class PageTemplate extends PureComponent {
   }
 
   buildFeildData = (data) => {
+    const componentData = this.props.component.data;
     const fields = [];
     Object.keys(data).forEach(item => {
-      fields.push({
-        name: item,
-        value: '',
-        label: '',
-        placeholder: '',
-        type: '',
-        default_value: data[item] || '',
-        rules: [],
-      });
+      const defaultFieldType = 'input';
+      const defaultField = componentData.treeData.filter(item => item.name == 'form').find(item => item.name == 'input');
+      const field = this.getDefaultField(item, data[item]);
+      fields.push(field);
     });
     return fields;
   }
@@ -481,6 +489,9 @@ export default class PageTemplate extends PureComponent {
           <FormItem {...formItemLayout} label="接口：">
             {getFieldDecorator('inter_id', {
               initialValue: template.inter_id,
+              rules: [{
+                required: true, message: '请选择接口',
+              }],
             })(
               <Select onChange={(value) => {this.selectInter(value)}} placeholder="选择接口自动生成">
                 <Option value="" key="">不使用接口</Option>

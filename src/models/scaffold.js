@@ -19,6 +19,8 @@ const initState = {
       page_dir: '',
       store_template: '',
       store_dir: '',
+      service_template: '',
+      service_dir: '',
     }
   };
 

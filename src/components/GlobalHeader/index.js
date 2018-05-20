@@ -76,6 +76,7 @@ export default class GlobalHeader extends PureComponent {
   showLogDialog = () => {
     this.setState({
        isShowLog: true,
+       logCount: 0,
      });
   }
    handleOk = (e) => {

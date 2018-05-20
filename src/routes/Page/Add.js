@@ -12,6 +12,7 @@ import {
   Form, Input, DatePicker, Select, Button, Card, InputNumber, Radio, Icon, Tooltip,
 } from 'antd';
 import _ from 'lodash';
+import Debounce from 'lodash-decorators/debounce';
 import PageHeaderLayout from '../../layouts/PageHeaderLayout';
 import CodeArea from '../../components/CodeArea';
 import Attr from '../../components/Attr';
@@ -95,18 +96,7 @@ export default class Add extends PureComponent {
     // info: this.props.page.info,
   }
   componentWillReceiveProps(nextProps) {
-    if ('match' in nextProps) {
-      const id = nextProps.match.params.id;
-      if(this.props.match.params.id != id){
-        this.props.dispatch({
-          type: 'page/info',
-          payload: {
-            id: id,
-          },
-        });
 
-      }
-    }
   }
   componentDidMount(){
     let id = this.props.match.params.id;
@@ -166,12 +156,17 @@ export default class Add extends PureComponent {
           payload.path = '/' + payload.path;
         }
 
+        if(!payload.page_template[0].inter_id){
+          message.warning('请选择接口');
+          return ;
+        }
+
         this.props.dispatch({
           type: 'page/add',
           payload: payload,
           callback: () => {
             message.success('保存成功');
-
+            this.nativeHandlePage(payload, 'save');
             this.props.dispatch(routerRedux.push('/page/list'));
           }
         });
@@ -193,11 +188,15 @@ export default class Add extends PureComponent {
 
         payload.path = '/preview/preview';
 
-        if(window.preview){
-          const appData = this.props.app.data.list.find(item => item.id == payload.app_id);
-          // const scaffoldData = this.props.scaffold.data.list.find(item => item.id == payload.scaffold_id);
-          const scaffoldData = this.props.scaffold.data.list[0];
-          window.preview(payload, appData, scaffoldData);
+        if(!payload.page_template[0].inter_id){
+          message.warning('请选择接口');
+          return ;
+        }
+
+
+
+        if(native.isEnablePreview(payload.app_id)){
+          this.nativeHandlePage(payload, 'preview');
           return ;
         }
 
@@ -214,17 +213,29 @@ export default class Add extends PureComponent {
       }
     });
   }
+  nativeHandlePage = (payload, type) => {
+    let newPayload = {...payload};
+    if(native.isEnablePreview(newPayload.app_id)){
+      ;
+      const interId = newPayload.page_template[0].inter_id;
+      const appData = this.props.app.data.list.find(item => item.id == newPayload.app_id);
+      // const scaffoldData = this.props.scaffold.data.list.find(item => item.id == newPayload.scaffold_id);
+      const scaffoldData = this.props.scaffold.data.list[0];
+      const interData = this.props.inter.data.list.find(item => item.id == interId);
+      if(type == 'preview'){
+        newPayload.path = '/preview/preview'
+        native.preview(newPayload, appData, scaffoldData, interData);
+      }else if(type ='save'){
+        native.savePage(newPayload, appData, scaffoldData, interData);
+      }
+    }
+  }
   cancel = ()=>{
     this.props.dispatch(routerRedux.push('/page/list'));
   }
+  @Debounce(800)
   realTimePreview(){
-    if(this.realTimePreviewTimer){
-      clearTimeout(this.realTimePreviewTimer);
-      this.realTimePreviewTimer = null;
-    }
-    this.realTimePreviewTimer = setTimeout(() => {
-      this.preview();
-    }, 100);
+    this.preview();
   }
   addPageComponent = () => {
     let componentId = this.props.form.getFieldValue('component_id');
@@ -323,6 +334,9 @@ export default class Add extends PureComponent {
     // let template = this.props.template.data.list.find(item => item.id === templateId);
     // let componentField = template.content.extra_field.find(item => item.id === pureField.id);
     //
+    //之前版本可能没有extra_field
+    component.extra_field = component.extra_field || [];
+
     const orignComponent = this.props.component.data.list.find(item => item.id == component.id);
 
     const filterExtraField = orignComponent.extra_field.filter(item => {
@@ -666,7 +680,7 @@ export default class Add extends PureComponent {
           </Row>
         </TabPane>
         <TabPane tab="预览" key="2" forceRender={true} style={{width: '100%', height: '800px'}}>
-          <iframe src={this.getPreviewIframeUrl()} allowfullscreen sandbox="allow-scripts allow-pointer-lock allow-same-origin allow-popups allow-modals allow-forms" allowtransparency="true" frameborder="0" className="preview" style={{width: '100%', height: '100%'}}></iframe>
+          <iframe src={this.getPreviewIframeUrl()} sandbox="allow-scripts allow-pointer-lock allow-same-origin allow-popups allow-modals allow-forms" allowtransparency="true" frameBorder="0" className="preview" style={{width: '100%', height: '100%'}}></iframe>
         </TabPane>
       </Tabs>
 
