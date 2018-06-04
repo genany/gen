@@ -1,10 +1,10 @@
-import { Form, Input, Select, Button } from 'antd';
+import { Form, Input, Select, Button, Icon } from 'antd';
 const FormItem = Form.Item;
 const Option = Select.Option;
 const { TextArea } = Input;
 
 import CodeMirror from 'codemirror'
-import emmet from '@emmetio/codemirror-plugin';
+// import emmet from '@emmetio/codemirror-plugin';
 import styles from './index.less';
  // require('codemirror/lib/codemirror.js')
 require('codemirror/lib/codemirror.css')
@@ -56,7 +56,7 @@ require('codemirror/addon/scroll/simplescrollbars.css')
 require('codemirror/addon/hint/show-hint.css')
 require('codemirror/addon/tern/tern.css')
 
-emmet(CodeMirror);
+// emmet(CodeMirror);
 
 
 
@@ -64,17 +64,20 @@ export default class CodeArea extends React.Component {
   constructor(props) {
     super(props);
 
-    const value = this.props.value || '';
+    // const value = this.props.value || '';
     this.state = {
-      code: value,
+      code: '',
+      isFullscreen: false,
     };
   }
   componentWillReceiveProps(nextProps) {
     if ('value' in nextProps) {
       const value = nextProps.value;
-      this.setState({code: value});
-      this.setCode(value);
-
+      if(value != this.state.code){
+        this.setState({code: value}, () => {
+          this.setCode(value);
+        });
+      }
     }
   }
   componentDidMount(){
@@ -89,6 +92,7 @@ export default class CodeArea extends React.Component {
     let lineNumbers = false;
     let placeholder = this.props.placeholder || '请输入';
     let readOnly = this.props.readOnly || false;
+    let height = this.props.height;
 
 
     type = type || 'jsx';
@@ -103,10 +107,10 @@ export default class CodeArea extends React.Component {
       scrollbarStyle: 'simple',
       // extraKeys: {"Enter": "newlineAndIndentContinueComment"},
       readOnly: readOnly,
-      extraKeys: {
-        'Tab': 'emmetExpandAbbreviation',
-        'Enter': 'emmetInsertLineBreak'
-      },
+      // extraKeys: {
+      //   'Tab': 'emmetExpandAbbreviation',
+      //   'Enter': 'emmetInsertLineBreak'
+      // },
       // theme: 'eclipse',
       // theme: 'yeti',
       theme: 'default',
@@ -115,15 +119,16 @@ export default class CodeArea extends React.Component {
       gutters: ["CodeMirror-linenumbers", "CodeMirror-foldgutter"],
       highlightSelectionMatches: {showToken: /\w/, annotateScrollbar: true},
       extraKeys: {
-        "F11": function(cm) {
-          cm.setOption("fullScreen", !cm.getOption("fullScreen"));
+        "F11": (cm) => {
+          this.fullScreen();
         },
-        "Esc": function(cm) {
-          if (cm.getOption("fullScreen")) cm.setOption("fullScreen", false);
+        "Esc": (cm) => {
+          if (cm.getOption("fullScreen")) {
+            this.setState({isFullscreen: false})
+            cm.setOption("fullScreen", false)
+          };
         }
-      }
-
-
+      },
       // value: val
     };
 
@@ -162,8 +167,9 @@ export default class CodeArea extends React.Component {
     this.codeEditor = CodeMirror(this.refs.code, opt);
     this.codeEditor.on('change', () => {
       let code = this.codeEditor.getDoc().getValue();
-      this.setState({code: code});
-      this.triggerChange(code);
+      this.setState({code: code}, () => {
+        this.triggerChange(code);
+      });
     });
     this.codeEditor.on('blur', () => {
       let code = this.codeEditor.getDoc().getValue();
@@ -187,6 +193,11 @@ export default class CodeArea extends React.Component {
       }
     }
   }
+  fullScreen = () => {
+    let isFullscreen = !this.codeEditor.getOption("fullScreen");
+    this.setState({isFullscreen: isFullscreen})
+    this.codeEditor.setOption("fullScreen", isFullscreen);
+  }
   triggerChange = (changedValue) => {
     // Should provide an event to pass value to Form.
     const onChange = this.props.onChange;
@@ -201,13 +212,29 @@ export default class CodeArea extends React.Component {
       onBlur(changedValue);
     }
   }
+  renderIcon = () => {
+    const isFullscreen = this.state.isFullscreen;
+    if(isFullscreen){
+      return (<span onClick={this.fullScreen} className="fullscreen-btn fullscreen-open">
+            <Icon type="shrink" />
+          </span>);
+    }else{
+      return (<span onClick={this.fullScreen} className="fullscreen-btn">
+            <Icon type="arrows-alt" />
+          </span>);
+    }
+  }
   render() {
     const { size } = this.props;
     const state = this.state;
+    const style = {};
+    if(this.props.height){
+      style.height = this.props.height;
+    }
     return (
-      <span>
-        <div ref="code" className="code"></div>
-      </span>
+      <div ref="code" className="code" style={style}>
+        {this.renderIcon()}
+      </div>
     );
   }
 }

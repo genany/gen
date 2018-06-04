@@ -19,6 +19,8 @@ import Attr from '../../components/Attr';
 import FormTemplate from './FormTemplate.js';
 import TableTemplate from './TableTemplate.js';
 import PageComponent from './PageComponent.js';
+import ComponentExtraField from './ComponentExtraField.js';
+import ComponentTree from './ComponentTree.js';
 import styles from './add.less';
 import {uuid, arrToTree} from '../../utils/utils';
 import native from '../../utils/native.js';
@@ -92,7 +94,8 @@ export default class Add extends PureComponent {
     component: null,
     type: '',
     id: '',
-    filterExtraField: [],
+    // filterExtraField: [],
+    extra_field_value: '',
     // info: this.props.page.info,
   }
   componentWillReceiveProps(nextProps) {
@@ -156,10 +159,13 @@ export default class Add extends PureComponent {
           payload.path = '/' + payload.path;
         }
 
-        if(!payload.page_template[0].inter_id){
+        if(!payload.page_template[0].content.children[0]){
           message.warning('请选择接口');
           return ;
         }
+
+        // this.nativeHandlePage(payload, 'save');
+        // return;
 
         this.props.dispatch({
           type: 'page/add',
@@ -174,7 +180,6 @@ export default class Add extends PureComponent {
     });
   }
   preview = (e) => {
-    // e.preventDefault();
     this.props.form.validateFieldsAndScroll((err, values) => {
       if (!err) {
         let id = this.props.page.info.id;
@@ -188,7 +193,7 @@ export default class Add extends PureComponent {
 
         payload.path = '/preview/preview';
 
-        if(!payload.page_template[0].inter_id){
+        if(!payload.page_template[0].content.children[0].inter_id){
           message.warning('请选择接口');
           return ;
         }
@@ -216,11 +221,10 @@ export default class Add extends PureComponent {
   nativeHandlePage = (payload, type) => {
     let newPayload = {...payload};
     if(native.isEnablePreview(newPayload.app_id)){
-      ;
-      const interId = newPayload.page_template[0].inter_id;
+      const interId = newPayload.page_template[0].content.children[0].inter_id;
       const appData = this.props.app.data.list.find(item => item.id == newPayload.app_id);
-      // const scaffoldData = this.props.scaffold.data.list.find(item => item.id == newPayload.scaffold_id);
-      const scaffoldData = this.props.scaffold.data.list[0];
+      // const scaffoldData = this.props.scaffold.data.list.find(item => item.id == appData.scaffold_id);
+      const scaffoldData = appData.scaffold;
       const interData = this.props.inter.data.list.find(item => item.id == interId);
       if(type == 'preview'){
         newPayload.path = '/preview/preview'
@@ -293,16 +297,29 @@ export default class Add extends PureComponent {
     }
 
     let template = this.props.template.data.list.find(item => item.id === templateId);
+    let formComponent = this.props.component.data.list.find(item => item.name === 'form');
     template = _.cloneDeep(template);
     // console.log(template, 'obj')
     // let info = this.state.info;
     let addPageTemplate = {
+      key: uuid(),
       page_id: '',
       template_id: template.id,
       inter_id: '',
       content: {
-        fields: [],
+        children: [
+          {
+            ...formComponent,
+            key: uuid(),
+            extra_field: [],
+            origin_extra_field: [...formComponent.extra_field],
+            children: [],
+          }
+        ],
         ...template,
+        extra_field: [],
+        origin_extra_field: [...template.extra_field],
+        key: uuid(),
       }
     };
 
@@ -340,88 +357,73 @@ export default class Add extends PureComponent {
     const orignComponent = this.props.component.data.list.find(item => item.id == component.id);
 
     const filterExtraField = orignComponent.extra_field.filter(item => {
-      return !component.extra_field.find(item2 => {item.name == item2.name});
+      return !component.extra_field.find(item2 => item.name == item2.name);
     });
 
     this.setState({component, type, id, filterExtraField});
     this.realTimePreview();
     // this.getNotUseComponentExtraField();
   }
-  changeTemplateExtraField = (extraField) => {
-    let templateId = this.props.form.getFieldValue('template_id');
-    let template = this.props.page.info.page_template.find(item => item.template_id === templateId);
-
-    template.content.extra_field = extraField;
-
-    this.props.dispatch({
-      type: 'page/updatePageTemplate',
-      payload: template,
-    });
-    this.realTimePreview();
+  setCurrComponent = (component) => {
+    this.setState({component});
   }
-  changeComponentExtraField = (extraField) => {
-    let component = this.state.component;
-    let type = this.state.type;
-    let templateId = this.state.id;
-    // let templateId = this.props.form.getFieldValue('template_id');
-    let template = this.props.page.info.page_template.find(item => item.template_id === templateId);
-    if(type == 'extra_field'){
-      template.content.extra_field.forEach((item, index) => {
-        if(item.uuid == component.uuid){
-          template.content.extra_field[index] = component;
-        }
-      });
+
+  getTargetComponent = (data, key) => {
+
+
+    let target = null;
+
+    transList(data, key);
+    return target;
+    function transList(data){
+      if(data.key == key){
+        target = data;
+      }
+
+      if(data.children){
+        data.children.some(item => {
+          transList(item, key);
+        })
+      }
     }
 
-    this.props.dispatch({
-      type: 'page/updatePageTemplate',
-      payload: template,
-    });
-    this.realTimePreview();
   }
-  addComponentExtraFieldConfig = (extraFieldId) => {
-    const component = this.state.component;
-    const filterExtraField = this.state.filterExtraField;
-    // const orignComponent = this.props.component.data.list.find(item => item.id == component.id);
 
-    const extraField = filterExtraField.find(item => item.id == extraFieldId);
-    const newFilterExtraField = filterExtraField.filter(item => item.id != extraFieldId);
-
-
-    component.extra_field.push(extraField);
-    this.setState({
-      component: {
-        ...component
-      },
-      filterExtraField: newFilterExtraField,
-    });
-    this.realTimePreview();
-  }
 
   getPreviewIframeUrl = () => {
-    // if(window.location.host == 'gen.sdemo.cn'){
-    //   return 'http://scaffold.sdemo.cn/#/preview/preview';
-    // }else{
-    //   return 'http://localhost:8000/#/preview/preview';
-    // }
     return native.getPreviewPageUrl(this.props.match.params.app_id, '/preview/preview');
   }
 
-  getNotUseComponentExtraField = () => {
-    const component = this.state.component;
-    const orignComponent = this.props.component.data.list.find(item => item.id == component.id);
-
-    const filterExtraField = orignComponent.extra_field.filter(item => {
-      return !component.extra_field.find(item2 => {item.name == item2.name});
-    });
-
-    this.setState({filterExtraField});
-    // return filterExtraField;
+  getComponentTreeData = () => {
+    let templates = this.props.page.info.page_template;
+    if(templates.length){
+      return [templates[0].content];  //页面模版和组件类似
+    }else{
+      return [];
+    }
   }
 
-  renderTemplate = (item) => {
+  changeComponent = (component) => {
+    this.setState({component}, () => {
+      let templateId = this.props.form.getFieldValue('template_id');
+      let template = this.props.page.info.page_template.find(item => item.template_id === templateId);
+      let targetComponent = this.getTargetComponent(template.content, this.state.component.key);
+
+      targetComponent.extra_field = this.state.component.extra_field;
+
+      this.props.dispatch({
+        type: 'page/updatePageTemplate',
+        payload: template,
+      });
+      this.realTimePreview();
+    });
+  }
+
+  renderTemplate = (pageItem) => {
     const { page: {info}, component, valid, inter, submitting } = this.props;
-    let templateId = this.props.form.getFieldValue('template_id');
+    let item = pageItem.content.children[0]; //组件  form或table组件
+    // let templateId = this.props.form.getFieldValue('template_id');
+    let templateId = pageItem.template_id;
     let template = this.props.template.data.list.find(item => item.id === templateId);
     let name = template && template.name || 'form';
     if(name == 'form'){
@@ -433,7 +435,7 @@ export default class Add extends PureComponent {
           inter={inter}
           template={item}
           dispatch={(args)=> {this.updatePageTemplate(args)}}
-          onChangeComponent={value => this.onChangeComponent(value, 'extra_field', templateId)}
+          onChangeComponent={(value) => this.setCurrComponent(value)}
         ></FormTemplate>
       );
     }else if(name == 'table'){
@@ -445,7 +447,7 @@ export default class Add extends PureComponent {
           inter={inter}
           template={item}
           dispatch={(args)=> {this.updatePageTemplate(args)}}
-          onChangeComponent={value => this.onChangeComponent(value, 'extra_field', templateId)}
+          onChangeComponent={(value) => this.setCurrComponent(value)}
         ></TableTemplate>
       );
     }else if(name == 'chart'){
@@ -457,67 +459,10 @@ export default class Add extends PureComponent {
           inter={inter}
           template={item}
           dispatch={(args)=> {this.updatePageTemplate(args)}}
-          onChangeComponent={value => this.onChangeComponent(value, 'extra_field', templateId)}
+          onChangeComponent={(value) => this.setCurrComponent(value)}
         ></TableTemplate>
       );
     }
-  }
-  renderTemplateExtraField = () => {
-    const { page: {info}, component, valid, inter, submitting } = this.props;
-    let templateId = this.props.form.getFieldValue('template_id');
-    let template = info.page_template.find(item => item.template_id == templateId);
-    let extra_field = template && template.content.extra_field || [];
-
-    return (
-      <Card title="模板自定义字段">
-        {template && extra_field.length ?
-          (
-            <Attr value={extra_field} onChange={value => this.changeTemplateExtraField(value)} placeholder="配置扩展字段" />
-          )
-          : ''
-        }
-      </Card>
-    );
-  }
-
-  renderComponentExtraField = () => {
-    const component = this.state.component;
-    const filterExtraField = this.state.filterExtraField;
-
-    if(!component){
-      return (
-        <Card title={'组件自定义字段'} style={{marginTop: 6}}>
-
-        </Card>
-      );
-    }
-    const componentName = component.name;
-
-    // const component = this.state.component;
-    // const orignComponent = this.props.component.data.list.find(item => item.id == component.id);
-
-    // const filterExtraField = orignComponent.extra_field.filter(item => {
-    //   return !component.extra_field.find(item2 => {item.name == item2.name});
-    // });
-
-    return (
-      <Card title={'组件' + componentName + '自定义字段'} style={{marginTop: 6}}>
-        <Select placeholder="请选择扩展字段" onChange={value => this.addComponentExtraFieldConfig(value)} style={{width: '100%'}}>
-          <Option value="">请选择扩展字段</Option>
-          {filterExtraField.map(item => {
-            return (
-              <Option value={item.id} key={item.id}>{item.label || item.name}</Option>
-            )
-          })}
-        </Select>
-        {component && component.extra_field.length ?
-          (
-            <Attr value={component.extra_field} onChange={(value) => this.changeComponentExtraField(value)} placeholder="配置扩展字段" />
-          )
-          : ''
-        }
-      </Card>
-    );
   }
   render() {
     const { page: {info}, component, valid, inter, submitting } = this.props;
@@ -527,17 +472,17 @@ export default class Add extends PureComponent {
     const appData = this.props.app.data;
 
     info.page_template.forEach(item => {
-      item.key = uuid();
+      item.key = item.key || uuid();
     });
     info.page_component.forEach(item => {
-      item.key = uuid();
+      item.key = item.key || uuid();
     });
 
     return (
-      <Tabs defaultActiveKey="1"  style={{width: '100%', height: '100%', marginTop: -25}}>
-        <TabPane tab="编辑" key="1">
-          <Row gutter={6}>
-            <Col className="gutter-row" span={18}>
+      <Row gutter={6}>
+        <Col className="gutter-row" span={18}>
+          <Tabs animated={false} defaultActiveKey="1"  style={{width: '100%', height: '100%', marginTop: -25}}>
+            <TabPane tab="编辑" key="1">
               <Card bordered={false}>
                 <Form
                   onSubmit={this.handleSubmit}
@@ -618,46 +563,7 @@ export default class Add extends PureComponent {
                   {info.page_template.map(item => {
                     return this.renderTemplate(item)
                   })}
-                  <FormItem {...formItemLayout} label="添加组件：">
-                    <Row>
-                      <Col span={18}>
-                        {getFieldDecorator('component_id', {
-                          initialValue: '',
-                        })(
-                          <TreeSelect
-                            style={{ width: 300 }}
-                            dropdownStyle={{ maxHeight: 400, overflow: 'auto' }}
-                            treeData={componentData.treeData}
-                            placeholder="请选择组件"
-                            treeDefaultExpandAll
-                          />
 
-                        )}
-
-                      </Col>
-                      <Col span={6}>
-                        <Button onClick={this.addPageComponent} style={{width: '100%'}}>添加</Button>
-                      </Col>
-                    </Row>
-                  </FormItem>
-                  <FormItem {...formItemLayout} label="组件：" style={{display: 'none'}}>
-                    {getFieldDecorator('page_component', {
-                      initialValue: info.page_component,
-                    })(
-                      <Input placeholder="组件" />
-                    )}
-                  </FormItem>
-                  {info.page_component.map(item => {
-                    return (
-                      <PageComponent
-                        key={item.id}
-                        valid={valid}
-                        inter={inter}
-                        component={item}
-                        dispatch={(args)=> {this.updatePageComponent(args)}}
-                      ></PageComponent>
-                    )
-                  })}
 
                   <FormItem {...submitFormLayout} style={{ marginTop: 32 }}>
                     <Button type="primary" htmlType="submit" loading={submitting}>
@@ -672,17 +578,22 @@ export default class Add extends PureComponent {
                   </FormItem>
                 </Form>
               </Card>
-            </Col>
-            <Col className="gutter-row" span={6}>
-              {this.renderTemplateExtraField()}
-              {this.renderComponentExtraField()}
-            </Col>
-          </Row>
-        </TabPane>
-        <TabPane tab="预览" key="2" forceRender={true} style={{width: '100%', height: '800px'}}>
-          <iframe src={this.getPreviewIframeUrl()} sandbox="allow-scripts allow-pointer-lock allow-same-origin allow-popups allow-modals allow-forms" allowtransparency="true" frameBorder="0" className="preview" style={{width: '100%', height: '100%'}}></iframe>
-        </TabPane>
-      </Tabs>
+            </TabPane>
+            <TabPane tab="预览" key="2" forceRender={true} style={{width: '100%', height: '800px'}}>
+              <iframe src={this.getPreviewIframeUrl()} sandbox="allow-scripts allow-pointer-lock allow-same-origin allow-popups allow-modals allow-forms" allowtransparency="true" frameBorder="0" className="preview" style={{width: '100%', height: '100%'}}></iframe>
+            </TabPane>
+          </Tabs>
+        </Col>
+        <Col className="gutter-row" span={6} style={{paddingTop: 28}}>
+          <ComponentExtraField
+            component={this.state.component}
+            onChange={(component) => this.changeComponent(component)}
+          ></ComponentExtraField>
+          <Card title="组件树" style={{marginTop: 6}}>
+            <ComponentTree data={this.getComponentTreeData()} currComponent={this.state.component} onSelectNode={(component) => this.setCurrComponent(component)}></ComponentTree>
+          </Card>
+        </Col>
+      </Row>
 
     )
   }

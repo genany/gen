@@ -1,5 +1,7 @@
 import { pageList, pageInfo, pageRemove, pageAdd } from '../services/api';
 import {uuid} from '../utils/utils';
+import _ from 'lodash';
+
 
 const initState = {
     loading: false,
@@ -23,7 +25,8 @@ const initState = {
 export default {
   namespace: 'page',
 
-  state: initState,
+  state: _.cloneDeep(initState),
+
 
   effects: {
     *list({ payload }, { call, put }) {
@@ -47,7 +50,7 @@ export default {
         payload: true,
       });
       yield put({
-        type: 'reset',
+        type: 'resetPage',
         payload: {
           type: 'info',
         }
@@ -142,7 +145,7 @@ export default {
     addTemplateFormFeild(state, action){
       let info = state.info;
       let payload = action.payload;
-      info.page_template[payload.templateIndex].content.fields.push(payload.field);
+      info.page_template[payload.templateIndex].content.children.push(payload.field);
 
       return {
         ...state,
@@ -186,35 +189,17 @@ export default {
         loading: action.payload,
       }
     },
-    reset(state, action){
-      const type = action.type;
+    resetPage(state, action){
+      const type = action.payload.type;
       if(type == 'list'){
         return {
           ...state,
-          data: initState.data,
+          data: _.cloneDeep(initState.data),
         };
       }else if(type == 'info'){
         return {
           ...state,
-          info: initState.info,
-        };
-      }else{
-        return {
-          ...initState,
-        };
-      }
-    },
-    reset(state, action){
-      const type = action.type;
-      if(type == 'list'){
-        return {
-          ...state,
-          data: initState.data,
-        };
-      }else if(type == 'info'){
-        return {
-          ...state,
-          info: initState.info,
+          info: _.cloneDeep(initState.info),
         };
       }else{
         return {

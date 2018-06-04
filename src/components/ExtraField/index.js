@@ -1,5 +1,7 @@
 import {
+  Popconfirm,
   Form,
+  Switch,
   Input,
   Select,
   Button,
@@ -83,6 +85,7 @@ export default class ExtraField extends React.Component {
   addExtraField = () => {
     let extraField = this.state.extraField;
     let extraFieldItem = {
+      key: uuid(),
       name: '',
       label: '',
       desc: '',
@@ -91,6 +94,7 @@ export default class ExtraField extends React.Component {
       options: '[]',
       default_value: '',
       value: '',
+      required: '0',
     };
 
     extraField.push(extraFieldItem);
@@ -99,11 +103,15 @@ export default class ExtraField extends React.Component {
     });
 
     this.triggerChange(extraField);
+  }
+  del = (currExtraField) => {
+    let extraField = this.state.extraField;
+    let newExtraField = extraField.filter(item => item.key != currExtraField.key);
+    this.setState({
+      extraField: newExtraField
+    });
 
-    // this.props.dispatch({
-    //   type: 'template/addExtraField',
-    //   payload: extraField,
-    // });
+    this.triggerChange(newExtraField);
   }
   toEn = (value, name, record) => {
     const extraField = this.state.extraField;
@@ -265,6 +273,8 @@ export default class ExtraField extends React.Component {
 
     }else if(valueType == 'function'){
 
+    }else if(valueType == 'reactnode'){
+
     }else if(valueType == 'any'){
 
     }else if(valueType == 'interface'){
@@ -299,6 +309,12 @@ export default class ExtraField extends React.Component {
               <TextArea value={item.desc} onChange={e => {this.change(e.target.value, 'desc', item)}} placeholder="请输入简介" />
             </Col>
             <Col className="gutter-row" span={8}>
+              <Select value={item.required} onChange={e => {this.change(e, 'required', item)}} placeholder="请是否必须配置">
+                <Option value="1">必须配置</Option>
+                <Option value="0">可选配置</Option>
+              </Select>
+            </Col>
+            <Col className="gutter-row" span={8}>
               <Select value={item.type} onChange={e => {this.change(e, 'type', item)}} placeholder="请选择值类型">
                 <Option value="">请选择"值控件"类型</Option>
                 <Option value="radio">单选</Option>
@@ -325,21 +341,30 @@ export default class ExtraField extends React.Component {
                   // <Option value="objectArray">object[]</Option>
                 }
                 <Option value="function">function</Option>
+                <Option value="reactnode">ReactNode</Option>
                 <Option value="any">any</Option>
                 <Option value="interface">接口数据</Option>
               </Select>
+            </Col>
+            <Col className="gutter-row" span={16}>
+              <Col span={20}>
+                <CodeArea value={item.options} onChange={value => {this.change(value, 'options', item)}} placeholder="请输入选项， 请点击右侧添加值按钮" />
+              </Col>
+              <Col span={4}>
+                <Button onClick={() => this.showModal(item)} type="primary">
+                添加值
+                </Button>
+              </Col>
             </Col>
             <Col className="gutter-row" span={8}>
               <CodeArea value={item.default_value} onChange={value => {this.change(value, 'default_value', item)}} onBlur={value => {this.validDefaultValue(value, item)}} placeholder="请输入默认值" />
             </Col>
             <Col className="gutter-row" span={12}>
-              <CodeArea value={item.options} onChange={value => {this.change(value, 'options', item)}} placeholder="请输入选项， 请点击右侧添加值按钮店家" />
-            </Col>
-            <Col className="gutter-row" span={3}>
-              <Button onClick={() => this.showModal(item)} type="primary">
-                添加值
-              </Button>
-
+              <Popconfirm title="确认删除吗？" onConfirm={() => this.del(item)}>
+                <Button type="danger">
+                  删除扩展
+                </Button>
+              </Popconfirm>
             </Col>
           </Row>
         </FormItem>

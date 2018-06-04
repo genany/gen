@@ -47,6 +47,16 @@ const native = {
       return window.getProject(id);
     }
   },
+  scaffoldFiles: function(scaffoldData, cb){
+    if(checkNativeEnable()){
+      window.scaffoldFiles(scaffoldData, cb);
+    }
+  },
+  getFileContent: function(data, cb){
+    if(checkNativeEnable()){
+      window.getFileContent(data.file, cb);
+    }
+  },
   preview: function(pageData, appData, scaffoldData, interData, cb){
     if(this.isEnablePreview(pageData.app_id)){
       window.preview(pageData, appData, scaffoldData, interData, cb);

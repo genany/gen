@@ -66,9 +66,12 @@ class StandardTable extends PureComponent {
     const { data: { list, pagination }, loading, columns } = this.props;
 
     const paginationProps = {
-      showSizeChanger: true,
+      showSizeChanger: false,
       showQuickJumper: true,
+      hideOnSinglePage: true,
       ...pagination,
+      pageSize: 200,
+      pageSizeOptions: ['200']
     };
 
     const rowSelection = {

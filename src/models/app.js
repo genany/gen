@@ -1,7 +1,7 @@
 import { appList, appInfo, appRemove, appAdd } from '../services/api';
 import { arrToTree } from '../utils/utils';
 import native from '../utils/native.js';
-
+import _ from 'lodash';
 const initState = {
   loading: false,
   data: {
@@ -25,9 +25,7 @@ const initState = {
 export default {
   namespace: 'app',
 
-  state: {
-    ...initState
-  },
+  state: _.cloneDeep(initState),
 
   effects: {
     *list({ payload }, { call, put }) {
@@ -142,16 +140,16 @@ export default {
       }
     },
     reset(state, action){
-      const type = action.type;
+      const type = action.payload.type;
       if(type == 'list'){
         return {
           ...state,
-          data: initState.data,
+          data: _.cloneDeep(initState.data),
         };
       }else if(type == 'info'){
         return {
           ...state,
-          info: initState.info,
+          info: _.cloneDeep(initState.info),
         };
       }else{
         return {

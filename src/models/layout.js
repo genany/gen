@@ -1,5 +1,5 @@
 import { layoutList, layoutInfo, layoutRemove, layoutAdd } from '../services/api';
-
+import _ from 'lodash';
 const initState = {
   loading: false,
   data: {
@@ -21,8 +21,7 @@ const initState = {
 
 export default {
   namespace: 'layout',
-
-  state: initState,
+  state: _.cloneDeep(initState),
 
   effects: {
     * list({ payload }, { call, put }) {

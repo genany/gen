@@ -1,5 +1,5 @@
 import { templateList, templateInfo, templateRemove, templateAdd } from '../services/api';
-
+import _ from 'lodash';
 const initState = {
     loading: false,
     data: {
@@ -21,7 +21,7 @@ const initState = {
 export default {
   namespace: 'template',
 
-  state: initState,
+  state: _.cloneDeep(initState),
 
   effects: {
     *list({ payload }, { call, put }) {
@@ -103,6 +103,15 @@ export default {
         info: action.payload,
       }
     },
+    changeTempalte(state, action){
+      return {
+        ...state,
+        info: {
+          ...state.info,
+          template: action.payload,
+        },
+      }
+    },
     addExtraField(state, action){
       let info = {...state.info};
       info.extra_field.push(action.payload);
@@ -136,16 +145,16 @@ export default {
       }
     },
     reset(state, action){
-      const type = action.type;
+      const type = action.payload.type;
       if(type == 'list'){
         return {
           ...state,
-          data: initState.data,
+          data: _.cloneDeep(initState.data),
         };
       }else if(type == 'info'){
         return {
           ...state,
-          info: initState.info,
+          info: _.cloneDeep(initState.info),
         };
       }else{
         return {

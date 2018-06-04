@@ -67,7 +67,7 @@ export default class PageTemplate extends PureComponent {
   constructor(props) {
     super(props);
 
-    const template = this.props.template || {content: {fields: [], extra_field: []}};
+    const template = this.props.template || {children: [], extra_field: []};
     this.state = {
       template: template,
     };
@@ -75,9 +75,9 @@ export default class PageTemplate extends PureComponent {
   componentWillReceiveProps(nextProps) {
     if ('template' in nextProps) {
       const template = nextProps.template;
-      template.content.fields = template.content.fields || [];
-      template.content.extra_field = template.content.extra_field || [];
-      this.setState({template: template});
+      template.children = template.children || [];
+      template.extra_field = template.extra_field || [];
+      // this.setState({template: template});
 
     }
   }
@@ -100,44 +100,69 @@ export default class PageTemplate extends PureComponent {
     });
   }
 
-  getDefaultField = (name, defaultValue) => {
+  getDefaultField = (fieldName, defaultValue) => {
     const componentData = this.props.component.data;
-    const defaultFieldType = 'input';
-    const defaultField = componentData.list.find(item => item.name == 'input');
+    const defaultFieldTypeName = 'input';
+    const defaultFormItemName = 'form_item';
+    const defaultField = componentData.list.find(item => item.name == defaultFieldTypeName);
+    const defaultFormItem = componentData.list.find(item => item.name == defaultFormItemName);
     const field = {
-      name: name || '',
-      label: '',
-      type: defaultFieldType,
-      component: {
-        ...defaultField,
-        extra_field: []
-      },
-      placeholder: '',
-      default_value: defaultValue || '',
+
+      fieldName: fieldName || '',
+      fieldLabel: fieldName || '',
       rules: [],
+      isValid: false,
+      children: [
+        {
+          // name: name || '',
+          // label: '',
+          // name: defaultField.name,
+          placeholder: '',
+          // component: {
+          //   ...defaultField,
+          //   extra_field: []
+          // },
+          children: [],
+          ..._.cloneDeep(defaultField),
+          extra_field: [],
+          origin_extra_field: [..._.cloneDeep(defaultField.extra_field)],
+          key: uuid(),
+          fieldName: fieldName || '',
+          fieldLabel: fieldName || '',
+          default_value: defaultValue ? defaultValue : defaultField.default_value,
+          rules: [],
+        }
+      ],
+      ..._.cloneDeep(defaultFormItem),
+      extra_field: [],
+      origin_extra_field: [..._.cloneDeep(defaultFormItem.extra_field)],
+      key: uuid(),
+      default_value: defaultValue ? defaultValue : defaultField.default_value,
+
     };
     return field;
   }
 
   addFormFeild = () => {
     const template = {...this.state.template};
-    const fields = template.content.fields;
+    const children = template.children;
     const field = this.getDefaultField();
 
-    fields.push(field);
+    children.push(field);
 
     this.triggerChange(template);
   }
   addValidRule = (fieldRecord) => {
     const template = this.state.template;
-    const fields = template.content.fields;
-    fields.forEach(field => {
+    const children = template.children;
+    children.forEach(field => {
       if(field.key == fieldRecord.key){
         field.rules.push({
           name: '',
           rule: '',
           success_msg: '',
           error_msg: '',
+          key: uuid(),
         });
       }
     });
@@ -156,9 +181,9 @@ export default class PageTemplate extends PureComponent {
 
   changeValid(value, record, name, fieldRecord){
     const template = {...this.state.template};
-    const fields = template.content.fields;
+    const children = template.children;
     const rule = this.getValidRule(value);
-    fields.forEach(item => {
+    children.forEach(item => {
       item.rules.forEach(ruleItem => {
         if(ruleItem.key == record.key){
           ruleItem[name] = value;
@@ -185,7 +210,7 @@ export default class PageTemplate extends PureComponent {
 
   changeExtraField = (value, record, name, fieldRecord) => {
     const template = {...this.state.template};
-    const extra_field = template.content.extra_field;
+    const extra_field = template.extra_field;
     extra_field.forEach(item => {
       if(item.name == record.name){
         item.default_value = value;
@@ -197,34 +222,75 @@ export default class PageTemplate extends PureComponent {
 
   change = (value, record, name, fieldRecord) => {
     const template = this.state.template;
-    const fields = template.content.fields;
-    fields.forEach(item => {
+    const children = template.children;
+    children.forEach(item => {
       if(item.key == record.key){
         item[name] = value;
+        if(['fieldName', 'fieldLabel', 'default_value', 'rules'].indexOf(name) != -1){
+          item.children[0][name] = value;
+        }
       }
     });
 
     this.triggerChange(template);
   }
   changeComponent = (value, record, name, fieldRecord) => {//验证才有fieldRecord
+    if(!value) return ;
     var originComponent = this.props.component.data.list.find(item => item.name == value);
     var component = _.cloneDeep(originComponent);
-    console.log(originComponent, component , 3333333)
-    component.uuid = uuid();
+
+    if(originComponent.dependent == 0){
+      message.warning('不可添加非独立组件');
+      record[value] = '';
+      return ;
+    }
+
+    component.key = component.key || uuid();
+    component.origin_extra_field = [...component.extra_field];
     component.extra_field = [];
-    this.change(value, record, name, fieldRecord);
-    this.change(component, record, 'component', fieldRecord);//字段得有组件
-    this.props.onChangeComponent(component, record);
+    let prevComponent = record.children[0];
+    let newComponent = {
+      ...prevComponent,
+      ...component,
+    };
+    record.children = [newComponent];
+
+    // this.change(value, record, name, fieldRecord);
+    // this.change(component, record, 'component', fieldRecord);//字段得有组件
+    this.props.onChangeComponent(newComponent, 'form_field_extra_field');
+    const template = this.state.template;
+    const children = template.children;
+    children.forEach(item => {
+      if(item.key == record.key){
+        item.children = [newComponent];
+      }
+    });
+    this.triggerChange(template);
+  }
+  selectFormFieldComponent = (e, record) => {//选中组件,用来修改组件扩展字段
+    e.preventDefault();
+    e.stopPropagation();
+    let component = record.children[0];
+    this.props.onChangeComponent(component, 'form_field_extra_field');
   }
   selectedComponent = (record) => {//选中组件,用来修改组件扩展字段
-    if(!record.type) return ;
-    var component = this.props.component.data.list.find(item => item.name == record.type);
-    this.props.onChangeComponent(record.component, record);
+    // if(!record.type) return ;
+    // var component = this.props.component.data.list.find(item => item.name == record.type);
+    // let component = record;
+    // var component = _.cloneDeep(record);
+    // component.key = component.key || uuid();
+    // let prevComponent = record;
+    // let newComponent = {
+    //   // ...prevComponent,
+    //   ...component,
+    // };
+
+    this.props.onChangeComponent(record, 'form_item_extra_field');
   }
   changeRuleRow = (value, record, name, fieldRecord) => {
     const template = this.state.template;
-    const fields = template.content.fields;
-    fields.forEach(item => {
+    const children = template.children;
+    children.forEach(item => {
       item.rules.forEach(rule => {
         if(rule.key == record.key){
           rule[name] = value;
@@ -258,11 +324,11 @@ export default class PageTemplate extends PureComponent {
       let resDataStr = inter.res_data;
       // console.log(reqDataStr)
       let reqData = JSON5.parse(reqDataStr);
-      let fields = this.buildFeildData(reqData);
-      template.content.fields = fields;
+      let children = this.buildFeildData(reqData);
+      template.children = children;
       template.inter_id = inter.id;
     }else{
-      template.content.fields = [];
+      template.children = [];
       template.inter_id = '';
     }
   }
@@ -271,8 +337,6 @@ export default class PageTemplate extends PureComponent {
     const componentData = this.props.component.data;
     const fields = [];
     Object.keys(data).forEach(item => {
-      const defaultFieldType = 'input';
-      const defaultField = componentData.treeData.filter(item => item.name == 'form').find(item => item.name == 'input');
       const field = this.getDefaultField(item, data[item]);
       fields.push(field);
     });
@@ -281,14 +345,14 @@ export default class PageTemplate extends PureComponent {
 
   onDeleteField = (record) => {
     const template = this.state.template;
-    template.content.fields = template.content.fields.filter(item => item.key != record.key);
+    template.children = template.children.filter(item => item.key != record.key);
     this.triggerChange(template);
   }
   onDeleteValidRule = (record, fieldRecord) => {
     const template = this.state.template;
-    const fields = template.fields;
+    const children = template.children;
 
-    fields.forEach(item => {
+    children.forEach(item => {
       if(item.key == fieldRecord.key){
         item.rules = item.rules.filter(rule => rule.key != record.key);
       }
@@ -305,56 +369,62 @@ export default class PageTemplate extends PureComponent {
     const validData = this.props.valid.data;
     const interData = this.props.inter.data;
     const formFieldData = [];
-    const fields = template.content.fields;
-    const extra_field = template.content.extra_field;
-    const componentList = componentData.treeData.filter(item => item.name == 'form');
+    const formItems = template.children;
+    const extra_field = template.extra_field;
+    const componentList = componentData.treeData.filter(item => item.dependent == 1);
 
-    fields.forEach(item => {
+    formItems.forEach(item => {
       item.key = item.key || uuid();
+      item.children[0].key = item.children[0].key || uuid();
     })
 
-    const formFieldColumns = [
+    const formItemColumns = [
       {
-        dataIndex: 'name',
+        dataIndex: 'children[0].fieldName',
         title: '字段',
-        key: 'name',
+        key: 'fieldName',
         render: (text, record) => {
           return (
-            <Input value={text} onChange={e => this.change(e.target.value, record, 'name')} placeholder="字段"/>
+            <Input value={text} onChange={e => this.change(e.target.value, record, 'fieldName')} placeholder="字段"/>
           );
         }
       },
       {
         width: 100,
-        dataIndex: 'type',
+        dataIndex: 'children[0].name',
         title: '类型',
-        key: 'type',
+        key: 'name',
         render: (text, record) => {
           return (
-            <TreeSelect
-              style={{ width: 150 }}
-              dropdownStyle={{ maxHeight: 400, overflow: 'auto' }}
-              treeData={componentList}
-              placeholder="请选择组件"
-              treeDefaultExpandAll
-              defaultValue={text}
-              onChange={(value) => this.changeComponent(value, record, 'type')}
-            />
+            <span onClick={(e) => {this.selectFormFieldComponent(e, record)}}>
+              <TreeSelect
+                style={{ width: 150 }}
+                dropdownStyle={{ maxHeight: 400, overflow: 'auto' }}
+                treeData={componentList}
+                placeholder="请选择组件"
+                treeDefaultExpandAll
+                showSearch
+                defaultValue={text}
+                onChange={(value) => this.changeComponent(value, record, 'name')}
+                className="tree-select"
+              />
+            </span>
+
           );
         }
       },
       {
-        dataIndex: 'label',
+        dataIndex: 'children[0].fieldLabel',
         title: 'Label',
-        key: 'label',
+        key: 'fieldLabel',
         render: (text, record) => {
           return (
-            <Input value={text}  onChange={e => this.change(e.target.value, record, 'label')} placeholder="Label"/>
+            <Input value={text}  onChange={e => this.change(e.target.value, record, 'fieldLabel')} placeholder="Label"/>
           );
         }
       },
       {
-        dataIndex: 'default_value',
+        dataIndex: 'children[0].default_value',
         title: '默认值',
         key: 'default_value',
         render: (text, record) => {
@@ -364,7 +434,7 @@ export default class PageTemplate extends PureComponent {
         }
       },
       {
-        dataIndex: 'placeholder',
+        dataIndex: 'children[0].placeholder',
         title: 'Placeholder',
         key: 'placeholder',
         render: (text, record) => {
@@ -374,9 +444,9 @@ export default class PageTemplate extends PureComponent {
         }
       },
       {
-        dataIndex: 'is_valid',
+        dataIndex: 'isValid',
         title: '验证',
-        key: 'is_valid',
+        key: 'isValid',
         render: (text, record) => {
           return (
             <Switch checkedChildren="是" unCheckedChildren="否" defaultChecked />
@@ -505,14 +575,15 @@ export default class PageTemplate extends PureComponent {
           </FormItem>
           <FormItem label="表单页面配置：">
             <Table
-              columns={formFieldColumns}
-              dataSource={fields}
+              childrenColumnName="isValid"
+              columns={formItemColumns}
+              dataSource={formItems}
               expandedRowRender={expandedRowValidRender}
               pagination={false}
               size="middle"
               onRow={record => {
                 return {
-                  onClick: () => {
+                  onClick: (event) => {
                     this.selectedComponent(record);
                   }
                 };

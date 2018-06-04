@@ -12,8 +12,11 @@ import {
 } from 'antd';
 import PageHeaderLayout from '../../layouts/PageHeaderLayout';
 import CodeArea from '../../components/CodeArea';
+import FileTree from '../../components/FileTree';
+import ExtraTemplate from '../../components/ExtraTemplate';
 import styles from './add.less';
 import {setToEn} from '../../utils/utils.js';
+import native from '../../utils/native.js';
 
 const Dragger = Upload.Dragger;
 const FormItem = Form.Item;
@@ -59,7 +62,10 @@ const formItemLayoutFull = {
 }))
 @Form.create()
 export default class Add extends PureComponent {
-
+  state = {
+    scaffoldFiles: [],
+    files: []
+  }
   componentWillReceiveProps(nextProps) {
 
   }
@@ -100,6 +106,9 @@ export default class Add extends PureComponent {
   }
   edit = () => {
     message.warning('开发中');
+  }
+  changeFile = (node) => {
+
   }
   render() {
     const { scaffold: {info}, submitting } = this.props;
@@ -159,26 +168,44 @@ export default class Add extends PureComponent {
               )}
             </FormItem>
             <FormItem {...formItemLayout} label="脚手架压缩包">
-              <Row gutter={8}>
-                <Col span={20}>
-                  {getFieldDecorator('file', {
-                      initialValue: info.file,
-                    })(
-                      <Dragger {...props}>
-                        <p className="ant-upload-drag-icon">
-                          <Icon type="inbox" />
-                        </p>
-                        <p className="ant-upload-text">点击或拖拽到此区域上传</p>
-                        <p className="ant-upload-hint">支持单个或批量上传</p>
-                      </Dragger>
-                    )}
-                </Col>
-                <Col span={4}>
-                  <Button onClick={this.edit}>编辑脚手架</Button>
-                </Col>
-              </Row>
+              {getFieldDecorator('file', {
+                  initialValue: info.file,
+                })(
+                  <Dragger {...props}>
+                    <p className="ant-upload-drag-icon">
+                      <Icon type="inbox" />
+                    </p>
+                    <p className="ant-upload-text">点击或拖拽到此区域上传</p>
+                    <p className="ant-upload-hint">支持单个或批量上传</p>
+                  </Dragger>
+                )}
             </FormItem>
-            <FormItem {...formItemLayout} label="路由文件：">
+            <FormItem {...formItemLayout} label="页面目录：">
+              {getFieldDecorator('page_dir', {
+                initialValue: info.page_dir,
+                 rules: [{
+                   required: true, message: '请输入页面目录',
+                 }],
+               })(
+                <Input placeholder="请输入页面目录" />
+              )}
+            </FormItem>
+            <FormItem {...formItemLayoutFull} label="扩展模版：">
+             {getFieldDecorator('extra_template', {
+               initialValue: info.extra_template,
+                rules: [{
+                  required: true, message: '请输入扩展模版',
+                }],
+              })(
+               <ExtraTemplate
+                 extra={info.extra_template}
+                 scaffoldId={info.id}
+                 placeholder="请输入扩展模版"
+                 dispatch={this.props.dispatch}
+               />
+             )}
+           </FormItem>
+            {/*<FormItem {...formItemLayout} label="路由文件：">
               {getFieldDecorator('router_file_path', {
                 initialValue: info.router_file_path,
                  rules: [{
@@ -277,7 +304,7 @@ export default class Add extends PureComponent {
                })(
                 <Input placeholder="请输入Service目录" />
               )}
-            </FormItem>
+            </FormItem>*/}
 
             <FormItem {...submitFormLayout} style={{ marginTop: 32 }}>
               <Button type="primary" htmlType="submit" loading={submitting}>

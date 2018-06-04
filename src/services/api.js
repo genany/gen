@@ -1,5 +1,6 @@
 import { stringify } from 'qs';
 import request from '../utils/request';
+import native from '../utils/native';
 
 export async function previewApp(params) {
   return request(`/api/preview/app`, {
@@ -101,6 +102,46 @@ export async function scaffoldList(params) {
       ...params,
     }
   });
+}
+export async function scaffoldFiles(params) {
+  if(native.isNativeEnable()){
+    return new Promise((resolve, reject) => {
+      native.scaffoldFiles(params, (data) => {
+        resolve({
+          code: 200,
+          msg: '辅助工具获取文件list成功',
+          data: {
+            list: data,
+          }
+        });
+      });
+    });
+  }else{
+    return request(`/api/scaffold/files`, {
+      body: {
+        ...params,
+      }
+    });
+  }
+}
+export async function scaffoldFileContent(params) {
+  if(native.isNativeEnable()){
+    return new Promise((resolve, reject) => {
+      native.getFileContent(params, (data) => {
+        resolve({
+          code: 200,
+          msg: '辅助工具获取文件内容成功',
+          data: data,
+        });
+      });
+    });
+  }else{
+    return request(`/api/scaffold/fileContent`, {
+      body: {
+        ...params,
+      }
+    });
+  }
 }
 
 export async function scaffoldInfo(params) {

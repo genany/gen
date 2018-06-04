@@ -101,7 +101,22 @@ export default class Attr extends React.Component {
     //   payload: extraField,
     // });
   }
+  del = (item, index) => {
+    const extraField = this.state.extraField;
+    // extraField.forEach(item => {
+    //   if(item.key == record.key){
+    //     item[name] = value;
+    //   }
+    // });
+    const newExtraField = extraField.filter(itemData => itemData.key != item.key);
 
+    this.setState({
+      extraField: newExtraField
+    });
+
+    this.triggerChange(newExtraField);
+
+  }
   change = (value, name, record) => {
     const extraField = this.state.extraField;
     extraField.forEach(item => {
@@ -176,6 +191,8 @@ export default class Attr extends React.Component {
       }
     }else if(valueType == 'function'){
       newValue = value;
+    }else if(valueType == 'reactnode'){
+      newValue = value;
     }else if(valueType == 'interface'){
       newValue = value;
     }else{
@@ -201,6 +218,10 @@ export default class Attr extends React.Component {
     let defaultValue = this.normalizeFieldValue(field.value, field.default_value, field.value_type, field.type);
     let valueType = field.vlaue_type;
     let fieldControl = null;
+
+    if(!field.value){
+      // this.change(defaultValue, 'value', field);//渲染不能修改state否则无限循环卡死
+    }
 
     switch(type){
       case 'input':
@@ -252,6 +273,10 @@ export default class Attr extends React.Component {
               {this.renderExtraFieldControl(item)}
             </Col>
             <Col className="gutter-row" span={2}>
+              {
+                !item.required &&
+                  <Icon onClick={() => this.del(item, index)} type="minus-circle" style={{color: 'red'}}/>
+              }
               <Tooltip title={(
                 <div>
                   {item.label} <br/>{item.desc}

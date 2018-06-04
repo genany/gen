@@ -1,5 +1,6 @@
-import { scaffoldList, scaffoldInfo, scaffoldRemove, scaffoldAdd } from '../services/api';
-
+import {scaffoldFiles, scaffoldFileContent, scaffoldList, scaffoldInfo, scaffoldRemove, scaffoldAdd } from '../services/api';
+import {arrToTree, uuid} from '../utils/utils.js';
+import _ from 'lodash';
 const initState = {
     loading: false,
     data: {
@@ -12,6 +13,7 @@ const initState = {
       label: '',
       desc: '',
       file: '',
+      extra_template: [],
       router_file_path: '',
       router_template: '',
       menu_file_path: '',
@@ -21,15 +23,45 @@ const initState = {
       store_dir: '',
       service_template: '',
       service_dir: '',
-    }
+    },
+    files: {
+      list: [],
+      treeData: [],
+    },
   };
 
 export default {
   namespace: 'scaffold',
 
-  state: initState,
+  state: _.cloneDeep(initState),
 
   effects: {
+    *files({ payload, callback }, { call, put }) {
+
+      const response = yield call(scaffoldFiles, payload);
+      // response.key = payload.key
+      response.data.list.forEach(item => {
+        item.value = '' + item.name;
+        item.key = uuid();
+        item.title = item.label || item.name;
+        if(!item.isFile){
+          item.children = [];
+        }else{
+          item.isLeaf = true;
+        }
+      })
+console.log(response.data.list)
+      if (callback) callback(response.data.list);
+
+    },
+    *fileContent({ payload, callback }, { call, put }) {
+
+      const response = yield call(scaffoldFileContent, payload);
+
+
+      if (callback) callback(response.data);
+
+    },
     *list({ payload }, { call, put }) {
       yield put({
         type: 'loading',
@@ -97,6 +129,17 @@ export default {
   },
 
   reducers: {
+    saveFiles(state, action) {
+            // response.data.treeData = arrToTree(response.data.list, 'id', 'pid', '0');
+
+      return {
+        ...state,
+        files: {
+          list: action.payload.list,
+          treeData: action.payload.list,
+        },
+      };
+    },
     save(state, action) {
       return {
         ...state,
@@ -124,16 +167,16 @@ export default {
       }
     },
     reset(state, action){
-      const type = action.type;
+      const type = action.payload.type;
       if(type == 'list'){
         return {
           ...state,
-          data: initState.data,
+          data: _.cloneDeep(initState.data),
         };
       }else if(type == 'info'){
         return {
           ...state,
-          info: initState.info,
+          info: _.cloneDeep(initState.info),
         };
       }else{
         return {

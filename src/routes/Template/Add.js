@@ -10,9 +10,12 @@ import {
 
 import PageHeaderLayout from '../../layouts/PageHeaderLayout';
 import CodeArea from '../../components/CodeArea';
+import FileTree from '../../components/FileTree';
 import ExtraField from '../../components/ExtraField';
 import { uuid } from '../../utils/utils.js';
 import {setToEn} from '../../utils/utils.js';
+import native from '../../utils/native.js';
+
 
 const FormItem = Form.Item;
 const { Option } = Select;
@@ -58,9 +61,21 @@ const formItemLayoutFull = {
 }))
 @Form.create()
 export default class Add extends PureComponent {
+  constructor(props) {
+    super(props);
 
+    this.state = {
+      scaffoldFiles: [],
+      files: []
+    };
+  }
   componentWillReceiveProps(nextProps) {
-
+    if('template' in nextProps){
+      let info = nextProps.template.info;
+      if(info && info.scaffold_id){
+        this.getSubFiles();
+      }
+    }
   }
   componentDidMount(){
     let id = this.props.match.params.id;
@@ -102,6 +117,35 @@ export default class Add extends PureComponent {
   cancel = ()=>{
     this.props.dispatch(routerRedux.push('/template/list'));
   }
+
+  getSubFiles = (node) => {
+    return new Promise((resolve, reject) => {
+      let scaffoldId = this.props.form.getFieldValue('scaffold_id') || this.props.template.info.scaffold_id;
+      if(!scaffoldId){
+        message.warning('请选择脚手架');
+        return ;
+      }
+
+      this.props.dispatch({
+        type: 'scaffold/files',
+        payload: {
+          id: scaffoldId,
+          dir: node && node.fullName,
+        },
+        callback: (data) => {
+          if(!node){
+            this.setState({files: data});
+          }
+
+          resolve(data);
+        }
+      });
+    });
+  }
+  changeScaffold = (scaffoldId) => {
+    this.props.template.info.scaffold_id = scaffoldId;
+    this.getSubFiles();
+  }
   addExtraField = () => {
     let extraField = {
       name: '',
@@ -129,6 +173,39 @@ export default class Add extends PureComponent {
       type: 'template/updateExtraField',
       payload: extraField
     });
+  }
+
+  changeTempalte = (filePath) => {
+    let scaffoldId = this.props.form.getFieldValue('scaffold_id') || this.props.template.info.scaffold_id;
+    if(!scaffoldId){
+      message.warning('请选择脚手架');
+      return;
+    }
+
+    this.props.dispatch({
+      type: 'scaffold/fileContent',
+      payload: {
+        id: scaffoldId,
+        file: filePath,
+      },
+      callback: (data) => {
+        this.props.dispatch({
+          type: 'template/changeTempalte',
+          payload: data,
+        });
+      }
+    });
+
+    // native.getFileContent(filePath, data => {
+
+    //   // this.change(data, 'template', );
+    //   // this.props.form.setFieldsValue('template', data);
+    //   // this.props.info.template = data;
+    //   this.props.dispatch({
+    //     type: 'template/changeTempalte',
+    //     payload: data,
+    //   });
+    // });
   }
 
   renderExtraField = (extra_field) => {
@@ -191,7 +268,7 @@ export default class Add extends PureComponent {
                   required: true, message: '脚手架',
                 }],
               })(
-                <Select>
+                <Select onSelect={value => this.changeScaffold(value)}>
                   {
                     scaffoldData.list.map(item => {
                       return (
@@ -242,6 +319,11 @@ export default class Add extends PureComponent {
               })(
                 <TextArea placeholder="请输入简介" />
               )}
+            </FormItem>
+            <FormItem {...formItemLayout} label="选择模版：">
+              <FileTree treeData={this.state.files} onSelect={(value, node, extra) => {
+                this.changeTempalte(node.fullName, extra);
+              }} onLoadData={this.getSubFiles}></FileTree>
             </FormItem>
             <FormItem {...formItemLayoutFull} label="模板：">
               {getFieldDecorator('template', {

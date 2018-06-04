@@ -1,4 +1,6 @@
 import { interAppList, interAppInfo, interAppRemove, interAppAdd } from '../services/api';
+import _ from 'lodash';
+
 const initState = {
     loading: false,
     data: {
@@ -17,7 +19,7 @@ const initState = {
 export default {
   namespace: 'interApp',
 
-  state: initState,
+  state: _.cloneDeep(initState),
 
   effects: {
     *list({ payload }, { call, put }) {
@@ -114,16 +116,16 @@ export default {
       }
     },
     reset(state, action){
-      const type = action.type;
+      const type = action.payload.type;
       if(type == 'list'){
         return {
           ...state,
-          data: initState.data,
+          data: _.cloneDeep(initState.data),
         };
       }else if(type == 'info'){
         return {
           ...state,
-          info: initState.info,
+          info: _.cloneDeep(initState.info),
         };
       }else{
         return {
