@@ -1,4 +1,4 @@
-import { register } from '../services/api';
+import http from '@/common/request';
 import { setAuthority } from '../utils/authority';
 import { reloadAuthorized } from '../utils/Authorized';
 
@@ -6,17 +6,17 @@ export default {
   namespace: 'register',
 
   state: {
-    status: undefined,
+    status: undefined
   },
 
   effects: {
     *submit({ payload }, { call, put }) {
-      const response = yield call(register, payload);
+      const response = yield call(http.register, payload);
       yield put({
         type: 'registerHandle',
-        payload: response,
+        payload: response
       });
-    },
+    }
   },
 
   reducers: {
@@ -25,8 +25,8 @@ export default {
       reloadAuthorized();
       return {
         ...state,
-        status: payload.status,
+        status: payload.status
       };
-    },
-  },
+    }
+  }
 };

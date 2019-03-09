@@ -1,27 +1,11 @@
-import {
-  Popconfirm,
-  Form,
-  Switch,
-  Input,
-  Select,
-  Button,
-  Tooltip,
-  Modal,
-  Icon,
-  Row,
-  Col,
-  message
-} from 'antd';
-
-const FormItem = Form.Item;
-const Option = Select.Option;
-const { TextArea } = Input;
-
+import React from 'react';
+import { Popconfirm, Input, Icon, Row, Col } from 'antd';
 import { uuid } from '../../utils/utils.js';
-import {setToEn, zh2En} from '../../utils/utils.js';
+import { zh2En } from '../../utils/utils.js';
 import CodeArea from '../CodeArea';
-import native from '../../utils/native.js';
 import FileTree from '../FileTree';
+
+const { TextArea } = Input;
 
 export default class ExtraTemplate extends React.Component {
   constructor(props) {
@@ -31,43 +15,39 @@ export default class ExtraTemplate extends React.Component {
     this.state = {
       currExtra: null,
       extra: value,
-      files: [],
+      files: []
     };
   }
   componentWillReceiveProps(nextProps) {
     if ('value' in nextProps) {
-      this.setState({extra: nextProps.value});
-
+      this.setState({ extra: nextProps.value });
     }
   }
-  componentDidMount(){
-
+  componentDidMount() {
     setTimeout(() => {
       this.getSubFiles();
     }, 1000);
   }
-  componentWillUnmount(){
+  componentWillUnmount() {}
 
-  }
-
-  getSubFiles = (node) => {
+  getSubFiles = node => {
     return new Promise((resolve, reject) => {
       this.props.dispatch({
         type: 'scaffold/files',
         payload: {
           id: this.props.scaffoldId,
-          dir: node && node.fullName,
+          dir: node && node.fullName
         },
-        callback: (data) => {
-          if(!node){
-            this.setState({files: data});
+        callback: data => {
+          if (!node) {
+            this.setState({ files: data });
           }
 
           resolve(data);
         }
       });
     });
-  }
+  };
 
   addExtraTemplate = (value, node) => {
     let filePath = node.fullName;
@@ -81,7 +61,7 @@ export default class ExtraTemplate extends React.Component {
       name: file,
       dir: paths.join('/'),
       desc: '',
-      template: filePath,
+      template: filePath
     };
 
     extra.push(extraItem);
@@ -94,12 +74,12 @@ export default class ExtraTemplate extends React.Component {
       type: 'scaffold/fileContent',
       payload: {
         id: this.props.scaffoldId,
-        file: filePath,
+        file: filePath
       },
-      callback: (data) => {
+      callback: data => {
         let extra = this.state.extra;
-        let extraItemNew = extra.find(item => item.key == extraItem.key);
-        if(extraItemNew){
+        let extraItemNew = extra.find(item => item.key === extraItem.key);
+        if (extraItemNew) {
           extraItemNew.template = data;
         }
         this.setState({
@@ -107,24 +87,22 @@ export default class ExtraTemplate extends React.Component {
         });
       }
     });
-
-  }
-  del = (currExtra) => {
+  };
+  del = currExtra => {
     let extra = this.state.extra;
-    let newExtra = extra.filter(item => item.key != currExtra.key);
+    let newExtra = extra.filter(item => item.key !== currExtra.key);
     this.setState({
       extra: newExtra
     });
 
     this.triggerChange(newExtra);
-  }
+  };
   toEn = (value, name, record) => {
     const extra = this.state.extra;
 
-
-    zh2En(value).then((enValue) => {
+    zh2En(value).then(enValue => {
       extra.forEach(item => {
-        if(item.key == record.key){
+        if (item.key === record.key) {
           item[name] = enValue;
         }
       });
@@ -132,40 +110,38 @@ export default class ExtraTemplate extends React.Component {
         extra: extra
       });
       this.triggerChange(extra);
-
     });
-  }
+  };
 
   change = (value, name, record) => {
     const extra = this.state.extra;
     extra.forEach(item => {
-      if(item.key == record.key){
+      if (item.key === record.key) {
         item[name] = value;
       }
     });
 
     this.setState({
-      extra: extra,
+      extra: extra
     });
 
     this.triggerChange(extra);
-  }
+  };
 
-  triggerChange = (changedValue) => {
+  triggerChange = changedValue => {
     const onChange = this.props.onChange;
     if (onChange) {
       onChange(changedValue);
     }
-  }
+  };
 
-  renderExtraTemplate = (extra) => {
-
+  renderExtraTemplate = extra => {
     return extra.map((item, index) => {
       return (
         <Row key={item.key}>
           <Col span={3}>
             <Popconfirm title="确认删除吗？" onConfirm={() => this.del(item)}>
-              <Icon type="minus-circle" style={{color: 'red'}}/>
+              <Icon type="minus-circle" style={{ color: 'red' }} />
             </Popconfirm>
 
             {item.label}
@@ -173,28 +149,58 @@ export default class ExtraTemplate extends React.Component {
           <Col span={21}>
             <Row gutter={8}>
               <Col className="gutter-row" span={8}>
-                <Input value={item.label} onChange={e => {this.change(e.target.value, 'label', item)}} placeholder="请输入中文名称"/>
+                <Input
+                  value={item.label}
+                  onChange={e => {
+                    this.change(e.target.value, 'label', item);
+                  }}
+                  placeholder="请输入中文名称"
+                />
               </Col>
               <Col className="gutter-row" span={8}>
-                <Input value={item.name} onChange={e => {this.change(e.target.value, 'name', item)}} placeholder="请输入英文名称"/>
+                <Input
+                  value={item.name}
+                  onChange={e => {
+                    this.change(e.target.value, 'name', item);
+                  }}
+                  placeholder="请输入英文名称"
+                />
               </Col>
               <Col className="gutter-row" span={8}>
-                  <Input value={item.dir} onChange={e => {this.change(e.target.value, 'name', item)}} placeholder="请输入目录"/>
-
+                <Input
+                  value={item.dir}
+                  onChange={e => {
+                    this.change(e.target.value, 'name', item);
+                  }}
+                  placeholder="请输入目录"
+                />
               </Col>
               <Col className="gutter-row" span={24}>
-                <TextArea value={item.desc} onChange={e => {this.change(e.target.value, 'desc', item)}} placeholder="请输入模版介绍" />
+                <TextArea
+                  value={item.desc}
+                  onChange={e => {
+                    this.change(e.target.value, 'desc', item);
+                  }}
+                  placeholder="请输入模版介绍"
+                />
               </Col>
 
               <Col className="gutter-row" span={24}>
-                <CodeArea value={item.template} onChange={value => {this.change(value, 'template', item)}} height="200px" placeholder="请输入模版内容" />
+                <CodeArea
+                  value={item.template}
+                  onChange={value => {
+                    this.change(value, 'template', item);
+                  }}
+                  height="200px"
+                  placeholder="请输入模版内容"
+                />
               </Col>
             </Row>
           </Col>
         </Row>
       );
     });
-  }
+  };
 
   render() {
     const extra = this.state.extra;
@@ -206,9 +212,13 @@ export default class ExtraTemplate extends React.Component {
       <span>
         <Row gutter={8}>
           <Col className="gutter-row" span={20}>
-            <FileTree treeData={this.state.files} onSelect={(value, node, extra) => {
-              this.addExtraTemplate(value, node, extra);
-            }} onLoadData={this.getSubFiles}></FileTree>
+            <FileTree
+              treeData={this.state.files}
+              onSelect={(value, node, extra) => {
+                this.addExtraTemplate(value, node, extra);
+              }}
+              onLoadData={this.getSubFiles}
+            />
           </Col>
         </Row>
         {this.renderExtraTemplate(extra)}

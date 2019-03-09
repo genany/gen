@@ -3,100 +3,124 @@ import { isUrl } from '../utils/utils';
 const menuData = [
   {
     name: 'app管理',
-    icon: 'dashboard',
+    icon: 'appstore',
     path: 'app',
-    children: [{
-      name: 'app列表',
-      path: 'list',
-    }, {
-      name: 'app创建',
-      path: 'add/0',
-    }],
+    children: [
+      {
+        name: 'app列表',
+        path: 'list'
+      },
+      {
+        name: 'app创建',
+        path: 'add/0'
+      }
+    ]
   },
   {
     name: '页面管理',
-    icon: 'dashboard',
+    icon: 'file',
     path: 'page',
-    children: [{
-      name: 'page列表',
-      path: 'list',
-    }, {
-      name: 'page创建',
-      path: 'add/0/0/0',
-    }],
+    children: [
+      {
+        name: 'page列表',
+        path: 'list'
+      },
+      {
+        name: 'page创建',
+        path: 'add/0/0/0/0'
+      }
+    ]
   },
   {
     name: '脚手架管理',
-    icon: 'dashboard',
+    icon: 'table',
     path: 'scaffold',
-    children: [{
-      name: 'scaffold列表',
-      path: 'list',
-    }, {
-      name: 'scaffold创建',
-      path: 'add/0',
-    }],
+    children: [
+      {
+        name: 'scaffold列表',
+        path: 'list'
+      },
+      {
+        name: 'scaffold创建',
+        path: 'add/0'
+      }
+    ]
   },
   {
     name: '接口管理',
-    icon: 'dashboard',
+    icon: 'database',
     path: 'inter',
-    children: [{
-      name: '接口列表',
-      path: 'list',
-    }, {
-      name: '接口创建',
-      path: 'add/0',
-    }],
+    children: [
+      {
+        name: '接口列表',
+        path: 'list'
+      },
+      {
+        name: '接口创建',
+        path: 'add/0'
+      }
+    ]
   },
   {
     name: '布局管理',
-    icon: 'dashboard',
+    icon: 'layout',
     path: 'layout',
-    children: [{
-      name: 'layout列表',
-      path: 'list',
-    }, {
-      name: 'layout创建',
-      path: 'add/0',
-    }],
+    children: [
+      {
+        name: 'layout列表',
+        path: 'list'
+      },
+      {
+        name: 'layout创建',
+        path: 'add/0'
+      }
+    ]
   },
   {
     name: '模版管理',
-    icon: 'dashboard',
+    icon: 'form',
     path: 'template',
-    children: [{
-      name: '模版列表',
-      path: 'list',
-    }, {
-      name: '模版创建',
-      path: 'add/0',
-    }],
+    children: [
+      {
+        name: '模版列表',
+        path: 'list'
+      },
+      {
+        name: '模版创建',
+        path: 'add/0'
+      }
+    ]
   },
   {
     name: '组件管理',
-    icon: 'dashboard',
+    icon: 'copy',
     path: 'component',
-    children: [{
-      name: '组件列表',
-      path: 'list',
-    }, {
-      name: '组件创建',
-      path: 'add/0',
-    }],
+    children: [
+      {
+        name: '组件列表',
+        path: 'list'
+      },
+      {
+        name: '组件创建',
+        path: 'add/0'
+      }
+    ]
   },
   {
     name: '验证管理',
-    icon: 'dashboard',
+    icon: 'warning',
     path: 'valid',
-    children: [{
-      name: '验证列表',
-      path: 'list',
-    }, {
-      name: '验证创建',
-      path: 'add/0',
-    }],
-  },
+    children: [
+      {
+        name: '验证列表',
+        path: 'list'
+      },
+      {
+        name: '验证创建',
+        path: 'add/0'
+      }
+    ]
+  }
   // {
   //   name: '异常页',
   //   icon: 'warning',
@@ -136,7 +160,7 @@ const menuData = [
 ];
 
 function formatter(data, parentPath = '/', parentAuthority) {
-  return data.map((item) => {
+  return data.map(item => {
     let { path } = item;
     if (!isUrl(path)) {
       path = parentPath + item.path;
@@ -144,7 +168,7 @@ function formatter(data, parentPath = '/', parentAuthority) {
     const result = {
       ...item,
       path,
-      authority: item.authority || parentAuthority,
+      authority: item.authority || parentAuthority
     };
     if (item.children) {
       result.children = formatter(item.children, `${parentPath}${item.path}/`, item.authority);

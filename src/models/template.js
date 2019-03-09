@@ -1,22 +1,22 @@
-import { templateList, templateInfo, templateRemove, templateAdd } from '../services/api';
+import http from '@/common/request';
 import _ from 'lodash';
 const initState = {
-    loading: false,
-    data: {
-      list: [],
-      pagination: {},
-    },
-    info: {
-      id: '',
-      scaffold_id: '',
-      cate_id: '',
-      name: '',
-      label: '',
-      desc: '',
-      template: '',
-      extra_field: [],
-    }
-  };
+  loading: false,
+  data: {
+    list: [],
+    pagination: {}
+  },
+  info: {
+    id: '',
+    scaffold_id: '',
+    cate_id: '',
+    name: '',
+    label: '',
+    desc: '',
+    template: '',
+    extra_field: []
+  }
+};
 
 export default {
   namespace: 'template',
@@ -25,142 +25,118 @@ export default {
 
   effects: {
     *list({ payload }, { call, put }) {
-      yield put({
-        type: 'loading',
-        payload: true,
-      });
-      const response = yield call(templateList, payload);
+      const response = yield call(http.templateList, payload);
       yield put({
         type: 'save',
-        payload: response.data,
-      });
-      yield put({
-        type: 'loading',
-        payload: false,
+        payload: response.data
       });
     },
-    *info({payload}, {call, put}) {
-      yield put({
-        type: 'loading',
-        payload: true,
-      });
+    *info({ payload }, { call, put }) {
       yield put({
         type: 'reset',
         payload: {
-          type: 'info',
+          type: 'info'
         }
       });
-      if(payload.id == 0){
-         return ;
+      if (payload.id == 0) {
+        return;
       }
-      const response = yield call(templateInfo, payload);
+      const response = yield call(http.templateInfo, payload);
       yield put({
         type: 'saveInfo',
-        payload: response.data,
-      });
-      yield put({
-        type: 'loading',
-        payload: false,
+        payload: response.data
       });
     },
     *add({ payload, callback }, { call, put }) {
-      const response = yield call(templateAdd, payload);
+      const response = yield call(http.templateAdd, payload, {
+        method: 'post'
+      });
       yield put({
         type: 'save',
-        payload: response.data,
+        payload: response.data
       });
       if (callback) callback();
     },
     *remove({ payload, callback }, { call, put }) {
-      yield put({
-        type: 'loading',
-        payload: true,
+      const response = yield call(http.templateRemove, payload, {
+        method: 'post'
       });
-      const response = yield call(templateRemove, payload);
       yield put({
         type: 'removeItems',
-        payload: payload,
-      });
-      yield put({
-        type: 'loading',
-        payload: false,
+        payload: payload
       });
 
       if (callback) callback();
-    },
+    }
   },
 
   reducers: {
     save(state, action) {
       return {
         ...state,
-        data: action.payload,
+        data: action.payload
       };
     },
-    saveInfo(state, action){
+    saveInfo(state, action) {
       return {
         ...state,
-        info: action.payload,
-      }
+        info: action.payload
+      };
     },
-    changeTempalte(state, action){
+    changeTempalte(state, action) {
       return {
         ...state,
         info: {
           ...state.info,
-          template: action.payload,
-        },
-      }
+          template: action.payload
+        }
+      };
     },
-    addExtraField(state, action){
-      let info = {...state.info};
+    addExtraField(state, action) {
+      let info = { ...state.info };
       info.extra_field.push(action.payload);
 
       return {
         ...state,
-        info: info,
+        info: info
       };
     },
-    updateExtraField(state, action){
+    updateExtraField(state, action) {
       return {
         ...state,
         info: {
           ...state.info,
-          extra_field: action.payload,
-        },
-      }
+          extra_field: action.payload
+        }
+      };
     },
-    removeItems(state, action){
+    removeItems(state, action) {
       const data = state.data;
-      data.list = data.list.filter(item => action.payload.id.indexOf(item.id) == -1);
+      data.list = data.list.filter(
+        item => action.payload.id.indexOf(item.id) == -1
+      );
       return {
         ...state,
-        data: data,
-      }
+        data: data
+      };
     },
-    loading(state, action){
-      return {
-        ...state,
-        loading: action.payload,
-      }
-    },
-    reset(state, action){
+    reset(state, action) {
       const type = action.payload.type;
-      if(type == 'list'){
+      if (type == 'list') {
         return {
           ...state,
-          data: _.cloneDeep(initState.data),
+          data: _.cloneDeep(initState.data)
         };
-      }else if(type == 'info'){
+      } else if (type == 'info') {
         return {
           ...state,
-          info: _.cloneDeep(initState.info),
+          info: _.cloneDeep(initState.info)
         };
-      }else{
+      } else {
         return {
-          ...initState,
+          ...initState
         };
       }
-    },
-  },
+    }
+  }
 };

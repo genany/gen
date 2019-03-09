@@ -1,41 +1,117 @@
-import { query as queryUsers, queryCurrent } from '../services/user';
+import http from '@/common/request';
 
 export default {
   namespace: 'user',
 
   state: {
+    userInfo: {
+      name: '',
+      email: ''
+    },
     list: [],
-    currentUser: {},
+    currentUser: {}
   },
 
   effects: {
     *fetch(_, { call, put }) {
-      const response = yield call(queryUsers);
+      const response = yield call(http.queryUsers);
       yield put({
         type: 'save',
-        payload: response.data,
+        payload: response.data
       });
     },
     *fetchCurrent(_, { call, put }) {
-      const response = yield call(queryCurrent);
+      const response = yield call(http.queryCurrent);
       yield put({
         type: 'saveCurrentUser',
-        payload: response.data,
+        payload: response.data
       });
     },
+    *getUserInfo({ payload, callback }, { call, put, select }) {
+      const res = yield call(http.getUserInfo, payload);
+      if (res.code === 200) {
+        localStorage.setItem('user', JSON.stringify(res.data));
+        yield put({
+          type: 'userInfo',
+          payload: res.data
+        });
+      }
+      if (callback) {
+        callback(res);
+      }
+    },
+    *login({ payload, callback }, { call, put, select }) {
+      const res = yield call(http.login, payload, { method: 'POST' });
+      if (res.code === 200) {
+        localStorage.setItem('user', JSON.stringify(res.data));
+        yield put({
+          type: 'userInfo',
+          payload: res.data
+        });
+      }
+      if (callback) {
+        callback(res);
+      }
+    },
+    *logout({ payload, callback }, { call, put, select }) {
+      const res = yield call(http.logout, payload, { method: 'POST' });
+      localStorage.setItem('user', '');
+      if (res.code === 200) {
+        localStorage.removeItem('user');
+        yield put({
+          type: 'userInfo',
+          payload: res.data
+        });
+      }
+      if (callback) {
+        callback(res);
+      }
+    },
+    *resetUserInfo({ payload, callback }, { call, put, select }) {
+      localStorage.removeItem('user');
+      yield put({
+        type: 'userInfo',
+        payload: {
+          name: '',
+          email: ''
+        }
+      });
+      if (callback) {
+        callback();
+      }
+    },
+    *register({ payload, callback }, { call, put, select }) {
+      const res = yield call(http.register, payload, { method: 'POST' });
+      if (res.code === 200) {
+        // localStorage.setItem('user', res.data)
+        // yield put({
+        //   type: 'userInfo',
+        //   payload: res.data
+        // })
+      }
+      if (callback) {
+        callback(res);
+      }
+    }
   },
 
   reducers: {
+    userInfo(state, { payload }) {
+      return {
+        ...state,
+        userInfo: payload
+      };
+    },
     save(state, action) {
       return {
         ...state,
-        list: action.payload,
+        list: action.payload
       };
     },
     saveCurrentUser(state, action) {
       return {
         ...state,
-        currentUser: action.payload,
+        currentUser: action.payload
       };
     },
     changeNotifyCount(state, action) {
@@ -43,9 +119,9 @@ export default {
         ...state,
         currentUser: {
           ...state.currentUser,
-          notifyCount: action.payload,
-        },
+          notifyCount: action.payload
+        }
       };
-    },
-  },
+    }
+  }
 };

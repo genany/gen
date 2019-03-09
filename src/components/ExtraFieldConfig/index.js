@@ -1,3 +1,4 @@
+import React from 'react';
 import {
   Form,
   Checkbox,
@@ -5,53 +6,48 @@ import {
   DatePicker,
   Input,
   Select,
-  Button,
-  Tooltip,
-  Icon,
   Row,
-  Col,
-  message
+  Col
 } from 'antd';
-import JSON5  from 'json5';
+import JSON5 from 'json5';
+import { uuid } from '../../utils/utils.js';
+
 const FormItem = Form.Item;
 const Option = Select.Option;
 const CheckboxGroup = Checkbox.Group;
 const RadioGroup = Radio.Group;
 const { TextArea } = Input;
 
-
-import { uuid } from '../../utils/utils.js';
-
 const formItemLayout = {
   labelCol: {
     xs: { span: 24 },
-    sm: { span: 3 },
+    sm: { span: 3 }
   },
   wrapperCol: {
     xs: { span: 24 },
     sm: { span: 12 },
-    md: { span: 10 },
-  },
+    md: { span: 10 }
+  }
 };
 
 const submitFormLayout = {
   wrapperCol: {
     xs: { span: 24, offset: 0 },
-    sm: { span: 10, offset: 3 },
-  },
+    sm: { span: 10, offset: 3 }
+  }
 };
 
 const formItemLayoutFull = {
   labelCol: {
     xs: { span: 24 },
     sm: { span: 3 },
-    md: { span: 3 },
+    md: { span: 3 }
   },
   wrapperCol: {
     xs: { span: 24 },
     sm: { span: 21 },
-    md: { span: 21 },
-  },
+    md: { span: 21 }
+  }
 };
 
 @Form.create()
@@ -61,19 +57,16 @@ export default class ExtraFieldConfig extends React.Component {
 
     const value = this.props.value || [];
     this.state = {
-      extraField: value,
+      extraField: value
     };
   }
   componentWillReceiveProps(nextProps) {
     if ('value' in nextProps) {
       const value = nextProps.value;
-      this.setState({extraField: value});
-
+      this.setState({ extraField: value });
     }
   }
-  componentDidMount(){
-
-  }
+  componentDidMount() {}
 
   addExtraField = () => {
     let extraField = this.state.extraField;
@@ -83,7 +76,7 @@ export default class ExtraFieldConfig extends React.Component {
       desc: '',
       type: '',
       options: [],
-      default_value: '',
+      default_value: ''
     };
 
     extraField.push(extraFieldItem);
@@ -97,12 +90,12 @@ export default class ExtraFieldConfig extends React.Component {
     //   type: 'template/addExtraField',
     //   payload: extraField,
     // });
-  }
+  };
 
   change = (value, name, record) => {
     const extraField = this.state.extraField;
     extraField.forEach(item => {
-      if(item.key == record.key){
+      if (item.key == record.key) {
         item[name] = value;
       }
     });
@@ -117,89 +110,139 @@ export default class ExtraFieldConfig extends React.Component {
     //   type: 'template/updateExtraField',
     //   payload: extraField
     // });
-  }
+  };
 
-  triggerChange = (changedValue) => {
+  triggerChange = changedValue => {
     // Should provide an event to pass value to Form.
     const onChange = this.props.onChange;
     if (onChange) {
       onChange(changedValue);
     }
-  }
+  };
 
-  renderExtraFieldControl = (field) =>{
+  renderExtraFieldControl = field => {
     let type = field.type;
     let optionsStr = field.options || '[]';
     let options = JSON5.parse(optionsStr);
     let defaultValue = field.default_value || '';
     let fieldControl = null;
 
-    switch(type){
+    switch (type) {
       case 'input':
-        fieldControl = (<Input value={defaultValue} onChange={e => {this.change(e.target.value, 'default_value', field)}} placeholder="请输入"/>);
+        fieldControl = (
+          <Input
+            value={defaultValue}
+            onChange={e => {
+              this.change(e.target.value, 'default_value', field);
+            }}
+            placeholder="请输入"
+          />
+        );
         break;
       case 'textarea':
-        fieldControl = (<TextArea rows="1" value={defaultValue} onChange={e => {this.change(e.target.value, 'default_value', field)}} placeholder="请输入"/>);
+        fieldControl = (
+          <TextArea
+            rows="1"
+            value={defaultValue}
+            onChange={e => {
+              this.change(e.target.value, 'default_value', field);
+            }}
+            placeholder="请输入"
+          />
+        );
         break;
       case 'checkbox':
-        try{
+        try {
           defaultValue = JSON5.parse(defaultValue);
-        }catch(e){
+        } catch (e) {}
 
-        }
-
-        if(typeof defaultValue != 'array'){
+        if (typeof defaultValue !== 'array') {
           defaultValue = [defaultValue];
         }
 
-        fieldControl = (<CheckboxGroup options={options} defaultValue={defaultValue} onChange={value => {this.change(CheckboxGroup, 'default_value', field)}} />);
+        fieldControl = (
+          <CheckboxGroup
+            options={options}
+            defaultValue={defaultValue}
+            onChange={value => {
+              this.change(CheckboxGroup, 'default_value', field);
+            }}
+          />
+        );
         break;
       case 'radio':
-        fieldControl = (<RadioGroup options={options} defaultValue={defaultValue} onChange={value => {this.change(CheckboxGroup, 'default_value', field)}}  />);
+        fieldControl = (
+          <RadioGroup
+            options={options}
+            defaultValue={defaultValue}
+            onChange={value => {
+              this.change(CheckboxGroup, 'default_value', field);
+            }}
+          />
+        );
         break;
       case 'select':
         fieldControl = (
-            <Select defaultValue={defaultValue} onChange={value => {this.change(value, 'default_value', field)}}>
-              {options.map(item => {
-                return (
-                  <Option key={item} value={item}>{item}</Option>
-                );
-              })}
-            </Select>
-          );
+          <Select
+            defaultValue={defaultValue}
+            onChange={value => {
+              this.change(value, 'default_value', field);
+            }}
+          >
+            {options.map(item => {
+              return (
+                <Option key={item} value={item}>
+                  {item}
+                </Option>
+              );
+            })}
+          </Select>
+        );
         break;
       case 'date':
         fieldControl = (
-          <DatePicker defaultValue={defaultValue} onChange={value => {this.change(value, 'default_value', field)}} />
+          <DatePicker
+            defaultValue={defaultValue}
+            onChange={value => {
+              this.change(value, 'default_value', field);
+            }}
+          />
         );
         break;
       default:
-        fieldControl = (<Input value={defaultValue} onChange={e => {this.change(e.target.value, 'default_value', field)}} placeholder="请输入"/>);
-
+        fieldControl = (
+          <Input
+            value={defaultValue}
+            onChange={e => {
+              this.change(e.target.value, 'default_value', field);
+            }}
+            placeholder="请输入"
+          />
+        );
     }
 
     return fieldControl;
-  }
+  };
 
-  renderExtraField = (extraField) => {
+  renderExtraField = extraField => {
     const { getFieldDecorator, getFieldValue } = this.props.form;
 
     return extraField.map((item, index) => {
       return (
-          <Row key={item.id} gutter={8}>
-            <Col className="gutter-row" span={3} style={{textAlign: 'right'}}>
-              {item.name + '(' + item.label + ')'}
-            </Col>
-            <Col className="gutter-row" span={8}>
-              {this.renderExtraFieldControl(item)}
-            </Col>
-            <Col className="gutter-row" span={11}>
-              {item.desc}
-            </Col>
-          </Row>
+        <Row key={item.id} gutter={8}>
+          <Col className="gutter-row" span={3} style={{ textAlign: 'right' }}>
+            {item.name + '(' + item.label + ')'}
+          </Col>
+          <Col className="gutter-row" span={8}>
+            {this.renderExtraFieldControl(item)}
+          </Col>
+          <Col className="gutter-row" span={11}>
+            {item.desc}
+          </Col>
+        </Row>
       );
     });
-  }
+  };
 
   render() {
     const { getFieldDecorator, getFieldValue } = this.props.form;
@@ -208,10 +251,6 @@ export default class ExtraFieldConfig extends React.Component {
       item.key = item.key || uuid();
     });
 
-    return (
-      <span>
-        {this.renderExtraField(extraField)}
-      </span>
-    );
+    return <span>{this.renderExtraField(extraField)}</span>;
   }
 }

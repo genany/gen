@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="keywords" content="gen,可视化,自动化,接口,generator,脚手架,electronjs">
+  <meta name="description" itemprop="description" content="根据接口生成页面, 让用户快速搭建Web App">
+  <title>Gen</title>
+
+  <!--
+      manifest.json provides metadata used when your web app is added to the
+      homescreen on Android. See https://developers.google.com/web/fundamentals/engage-and-retain/web-app-manifest/
+    -->
+  <link rel="manifest" href="%PUBLIC_URL%/manifest.json">
+  <link rel="shortcut icon" href="%PUBLIC_URL%/favicon.png" type="image/x-icon">
+  <!--
+      Notice the use of %PUBLIC_URL% in the tags above.
+      It will be replaced with the URL of the `public` folder during the build.
+      Only files inside the `public` folder can be referenced from the HTML.
+
+      Unlike "/favicon.ico" or "favicon.ico", "%PUBLIC_URL%/favicon.ico" will
+      work correctly both with client-side routing and a non-root public URL.
+      Learn how to configure a non-root public URL by running `npm run build`.
+    -->
+    <link href="https://cdn.bootcss.com/pace/1.0.2/themes/blue/pace-theme-minimal.min.css" rel="stylesheet">
+
+<style type="text/css">
+[title="站长统计"] {
+  display: none;
+}
+.iframe-preview .ant-layout-header{
+  display: none;
+}
+.iframe-preview .ant-layout-footer{
+  display: none;
+}
+@-moz-keyframes loading {
+  0%, 100% {
+    -moz-transform: scale(1) rotateZ(0deg);
+    transform: scale(1) rotateZ(0deg);
+    opacity: 1;
+  }
+
+  26% {
+    -moz-transform: scale(1.1) rotateZ(12deg);
+    transform: scale(1.1) rotateZ(12deg);
+    opacity: .2;
+  }
+
+  76% {
+    -moz-transform: scale(0.8) rotateZ(-8deg);
+    transform: scale(0.8) rotateZ(-8deg);
+    opacity: .6;
+  }
+}
+@-webkit-keyframes loading {
+  0%, 100% {
+    -webkit-transform: scale(1) rotateZ(0deg);
+    transform: scale(1) rotateZ(0deg);
+    opacity: 1;
+  }
+
+  26% {
+    -webkit-transform: scale(1.1) rotateZ(12deg);
+    transform: scale(1.1) rotateZ(12deg);
+    opacity: .2;
+  }
+
+  76% {
+    -webkit-transform: scale(0.8) rotateZ(-8deg);
+    transform: scale(0.8) rotateZ(-8deg);
+    opacity: .6;
+  }
+}
+@keyframes loading {
+  0%, 100% {
+    -moz-transform: scale(1) rotateZ(0deg);
+    -ms-transform: scale(1) rotateZ(0deg);
+    -webkit-transform: scale(1) rotateZ(0deg);
+    transform: scale(1) rotateZ(0deg);
+    opacity: 1;
+  }
+
+  26% {
+    -moz-transform: scale(1.1) rotateZ(12deg);
+    -ms-transform: scale(1.1) rotateZ(12deg);
+    -webkit-transform: scale(1.1) rotateZ(12deg);
+    transform: scale(1.1) rotateZ(12deg);
+    opacity: .2;
+  }
+
+  76% {
+    -moz-transform: scale(0.8) rotateZ(-8deg);
+    -ms-transform: scale(0.8) rotateZ(-8deg);
+    -webkit-transform: scale(0.8) rotateZ(-8deg);
+    transform: scale(0.8) rotateZ(-8deg);
+    opacity: .6;
+  }
+}
+.init-loading{
+  width: 156px;
+  margin: 100px auto;
+}
+.loader {
+  overflow: hidden;
+  font-size: 45px;
+  font-family: "Helvetica", Arial, sans-serif;
+  font-weight: bold;
+}
+.loader span {
+  -moz-animation: loading 1s linear infinite -0.8s;
+  -webkit-animation: loading 1s linear infinite -0.8s;
+  animation: loading 1s linear infinite -0.8s;
+  float: left;
+}
+.loader .span2 {
+  -moz-animation: loading 1s linear infinite -0.2s;
+  -webkit-animation: loading 1s linear infinite -0.2s;
+  animation: loading 1s linear infinite -0.2s;
+}
+.loader .span3 {
+  -moz-animation: loading 1s linear infinite -0.5s;
+  -webkit-animation: loading 1s linear infinite -0.5s;
+  animation: loading 1s linear infinite -0.5s;
+}
+.loader .span4 {
+  -moz-animation: loading 1s linear infinite -1.1s;
+  -webkit-animation: loading 1s linear infinite -1.1s;
+  animation: loading 1s linear infinite -1.1s;
+}
+
+</style>
+</head>
+
+<body>
+  <script type="text/javascript">
+    if (window != top) {
+      document.body.className = 'iframe-preview';
+    }
+  </script>
+  <noscript>
+    You need to enable JavaScript to run this app.
+  </noscript>
+    <div id="root">
+      <div style="text-align: center; padding-top: 200px;">
+        <div class="init-loading">
+          <div class="loader font1">
+            <span >G</span>
+            <span class="span1">e</span>
+            <span class="span2">n</span>
+          </div>
+        </div>
+      预览加载资源比较多，请耐心等待。或者<a
+          href="https://pan.baidu.com/s/1J-E-k-MdbRwGL-Kdsglr5A#list/path=%2Fgen" target="_blank">下载辅助工具</a>本地预览</div>
+    </div>
+
+  <!--
+      This HTML file is a template.
+      If you open it directly in the browser, you will see an empty page.
+
+      You can add webfonts, meta tags, or analytics to this file.
+      The build step will place the bundled scripts into the <body> tag.
+
+      To begin the development, run `npm start` or `yarn start`.
+      To create a production bundle, use `npm run build` or `yarn build`.
+    -->
+    <script async src="//cdn.bootcss.com/pace/1.0.2/pace.min.js"></script>
+
+  <script src="https://s19.cnzz.com/z_stat.php?id=1273085490&web_id=1273085490" language="JavaScript"></script>
+  <script>
+    var _hmt = _hmt || [];
+    (function () {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?e336d384689cb93566d929900f3400d8";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+  <!-- Global site tag (gtag.js) - Google Analytics -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=UA-118987256-1"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag() { dataLayer.push(arguments); }
+    gtag('js', new Date());
+
+    gtag('config', 'UA-118987256-1');
+  </script>
+</body>
+
+</html>

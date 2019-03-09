@@ -1,28 +1,28 @@
-import { queryProjectNotice } from '../services/api';
+import http from '@/common/request';
 
 export default {
   namespace: 'project',
 
   state: {
-    notice: [],
+    notice: []
   },
 
   effects: {
     *fetchNotice(_, { call, put }) {
-      const response = yield call(queryProjectNotice);
+      const response = yield call(http.queryProjectNotice);
       yield put({
         type: 'saveNotice',
-        payload: Array.isArray(response) ? response : [],
+        payload: Array.isArray(response) ? response : []
       });
-    },
+    }
   },
 
   reducers: {
     saveNotice(state, action) {
       return {
         ...state,
-        notice: action.payload,
+        notice: action.payload
       };
-    },
-  },
+    }
+  }
 };

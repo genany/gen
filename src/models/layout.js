@@ -1,10 +1,9 @@
-import { layoutList, layoutInfo, layoutRemove, layoutAdd } from '../services/api';
+import http from '@/common/request';
 import _ from 'lodash';
 const initState = {
-  loading: false,
   data: {
     list: [],
-    pagination: {},
+    pagination: {}
   },
   info: {
     id: '',
@@ -15,7 +14,7 @@ const initState = {
     template: '',
     htmlTemplate: '',
     jsTemplate: '',
-    cssTemplate: '',
+    cssTemplate: ''
   }
 };
 
@@ -24,116 +23,90 @@ export default {
   state: _.cloneDeep(initState),
 
   effects: {
-    * list({ payload }, { call, put }) {
-      yield put({
-        type: 'loading',
-        payload: true,
-      });
-      const response = yield call(layoutList, payload);
+    *list({ payload }, { call, put }) {
+      const response = yield call(http.layoutList, payload);
       yield put({
         type: 'save',
-        payload: response.data,
-      });
-      yield put({
-        type: 'loading',
-        payload: false,
+        payload: response.data
       });
     },
-    * info({ payload }, { call, put }) {
-      yield put({
-        type: 'loading',
-        payload: true,
-      });
+    *info({ payload }, { call, put }) {
       yield put({
         type: 'reset',
         payload: {
-          type: 'info',
+          type: 'info'
         }
       });
       if (payload.id == 0) {
         return;
       }
-      const response = yield call(layoutInfo, payload);
+      const response = yield call(http.layoutInfo, payload);
       yield put({
         type: 'saveInfo',
-        payload: response.data,
-      });
-      yield put({
-        type: 'loading',
-        payload: false,
+        payload: response.data
       });
     },
-    * add({ payload, callback }, { call, put }) {
-      const response = yield call(layoutAdd, payload);
+    *add({ payload, callback }, { call, put }) {
+      const response = yield call(http.layoutAdd, payload, { method: 'post' });
       yield put({
         type: 'save',
-        payload: response.data,
+        payload: response.data
       });
       if (callback) callback();
     },
-    * remove({ payload, callback }, { call, put }) {
-      yield put({
-        type: 'loading',
-        payload: true,
+    *remove({ payload, callback }, { call, put }) {
+      const response = yield call(http.layoutRemove, payload, {
+        method: 'post'
       });
-      const response = yield call(layoutRemove, payload);
       yield put({
         type: 'removeItems',
-        payload: payload,
-      });
-      yield put({
-        type: 'loading',
-        payload: false,
+        payload: payload
       });
 
       if (callback) callback();
-    },
+    }
   },
 
   reducers: {
     save(state, action) {
       return {
         ...state,
-        data: action.payload,
+        data: action.payload
       };
     },
     saveInfo(state, action) {
       return {
         ...state,
-        info: action.payload,
-      }
+        info: action.payload
+      };
     },
     removeItems(state, action) {
       const data = state.data;
-      data.list = data.list.filter(item => action.payload.id.indexOf(item.id) == -1);
+      data.list = data.list.filter(
+        item => action.payload.id.indexOf(item.id) === -1
+      );
       return {
         ...state,
-        data: data,
-      }
-    },
-    loading(state, action) {
-      return {
-        ...state,
-        loading: action.payload,
-      }
+        data: data
+      };
     },
     reset(state, action) {
       const type = action.type;
-      if (type == 'list') {
+      if (type === 'list') {
         return {
           ...state,
-          data: initState.data,
+          data: initState.data
         };
-      } else if (type == 'info') {
+      } else if (type === 'info') {
         return {
           ...state,
-          info: initState.info,
+          info: initState.info
         };
       } else {
         return {
-          ...initState,
+          ...initState
         };
       }
-    },
-  },
+    }
+  }
 };

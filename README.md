@@ -1,47 +1,52 @@
-如果您对此项目感兴趣欢迎 [star](https://github.com/daycool/gen)，如果您对有问题和建议欢迎 [issues](https://github.com/daycool/gen/issues/new)
+如果您对此项目感兴趣欢迎 [star](https://github.com/genany/gen)，如果您对有问题和建议欢迎 [issues](https://github.com/genany/gen/issues/new)
 
-## What?
-  Gen是generator前三个字母。
-  根据接口生成页面，减少重复性工作！
+# 通过接口生成一切
 
-  目标让用户快速搭建Web App
-  
-## Why?
+---
 
-  后台管理大部分都是增删改查，大部分都是重复性开发，为解决这个问题创建了Gen这个项目
+ 我们程序员每天都跟代码打交道，前端程序员coding, 后端程序员coding。
+ 然而我们经常做重复性工作或者复制粘贴，或者前后端因为接口变动扯皮。
+ 为了解决这些问题我打算通过接口生成代码。
 
-## How?
-  
-1. 创建APP,选择使用脚手架，接口，布局
-1. 创建页面，
-  1)选择页面模版(如： 表单、表格、chart),
-  2)选择接口根据字段自动生成配置
-  3)选择字段使用组件，选择使用组件扩展字段并配置
-  4)如果特殊需求自定义添加组件
-  5)点击预览按钮查看页面效果（也可以保存后在查看）
-1. 进入app管理列表，点击项目下载到本地，之后就跟正常开发一样了
+## 为什么通过接口生成一切
+### 任何语言都是在跟数据打交道
 
-## TODO
-1. 模版和组件扩展配置
-2. 接口可视化配置
-3. 使用electon支持本地预览开发 [辅助工具下载](https://pan.baidu.com/s/1J-E-k-MdbRwGL-Kdsglr5A#list/path=%2Fgen) 
-4. 自定义脚手架(vue、react、bootstrap、小程序等)
-5. 可拖拽搭建页面
-6. 不限语言和框架，通过接口数据生成一切可生成的
+1. 在web前端html用来展现数据，javascript处理数据
+1. go、java、php、nodejs等后端语言都在处理适合前端和数据库的数据
+1. mysql、oracle、mongodb、postsql等数据库用来存储数据
+
+### 接口是前后端通讯的桥梁
+
+### 接口可以约定json格式
+1. json易于人阅读和编写
+2. json易于机器解析和生成
+1. 基于json可以生成页面中的表单，后端语言中的实体类，数据库中的表
+
+## 我理想的目标
+1. 根据接口一键生成一套前可运行后端接口方案
+1. 不改变我的开发方式
+1. 低门槛轻松上手
+1. 可视化配置
+1. 如果是web页面所见即所得
+1. 有丰富的项目脚手架方便二次开发
+1. 生成接口文档
+
+
+## 如何实现这些目标
+
+1. 我们把每个文件都看做一个大模版，而这个大模版又有多个小模版组成，小模版我们把它叫做组件，组件又有组件属性，这样就组成了一个component tree，而接口本省又是个data tree,  两者渲染成最终我们想要的文件，这里模版引擎我们用了unjuncks 
+1. 接口使用hjson我通过注释表明这个字段对应的组件类型mock数据。
+  hjson和jsonSchema相互转换，这样我就可以使用jsonSchema进行可视化配置
+1. 通过jsonSchema配置字段对应的组件和定制组件扩展信息
+1. 配置完即可动态渲染实时得到渲染结果, 如果是web页面我们可以iframe在区块内实时预览
+1. 定制可服用模版和组件， 这样我们就可以定制各种页面
+1. 通过把组件生成可动态配置的组件文件，然后把配置组件属性通过postMessage传递给iframe页进行实时修改
+1. 把我们最佳项目实践直接做为脚手架，通用的文件设置为模版，或分隔多个小组件
+
+## 在线运行太慢，或者网上代码不安全
+1. 使用electon辅助工具，直接把渲染结果输出到本地预览, 同时调用git命令保存修改文件，方便查看修改记录或回滚
+
 
 ## 演示
 
 ![扩展字段](http://gen.sdemo.cn/gen.gif)
-
-### 打包bug解决方案
-
-  修改文件node_modules/af-webpack/lib/getConfig.js中test: /\.(js|jsx)$/
-  的exclude
-
-    exclude: function(xx){
-      console.log(xx)
-      var emmetioReg = /node_modules\\@emmetio/;
-      var isExclude = /node_modules/.test(xx) && !emmetioReg.test(xx);
-      return isExclude;
-    },
-

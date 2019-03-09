@@ -1,43 +1,43 @@
-@import "~antd/lib/style/themes/default.less";
-@ease-in-out-circ: cubic-bezier(.78, .14, .15, .86);
-.logo {
-  height: 64px;
-  position: relative;
-  line-height: 64px;
-  padding-left: (@menu-collapsed-width - 32px) / 2;
-  transition: all .3s;
-  background: #002140;
-  overflow: hidden;
-  img {
-    display: inline-block;
-    vertical-align: middle;
-    height: 32px;
-  }
-  h1 {
-    color: #fff;
-    display: inline-block;
-    vertical-align: middle;
-    font-size: 20px;
-    margin: 0 0 0 12px;
-    font-family: 'Myriad Pro', 'Helvetica Neue', Arial, Helvetica, sans-serif;
-    font-weight: 600;
+@import '~antd/lib/style/themes/default.less';
+@nav-header-height: 64px;
+.top-nav-menu {
+  line-height: @nav-header-height;
+  li.ant-menu-item {
+    height: @nav-header-height;
+    line-height: @nav-header-height;
   }
 }
 
-.sider {
-  min-height: 100vh;
-  box-shadow: 2px 0 6px rgba(0, 21, 41, .35);
-  position: relative;
-  z-index: 10;
-}
-
-.icon {
-  width: 14px;
-  margin-right: 10px;
+.drawer .drawer-content {
+  background: #001529;
 }
 
 :global {
-  .drawer .drawer-content {
-    background: #001529;
+  .ant-menu-item,
+  .ant-menu-submenu-title {
+    padding: 0 10px;
+  }
+  .ant-menu-inline-collapsed {
+    & > .ant-menu-item .sider-menu-item-img + span,
+    &
+      > .ant-menu-item-group
+      > .ant-menu-item-group-list
+      > .ant-menu-item
+      .sider-menu-item-img
+      + span,
+    &
+      > .ant-menu-submenu
+      > .ant-menu-submenu-title
+      .sider-menu-item-img
+      + span {
+      max-width: 0;
+      display: inline-block;
+      opacity: 0;
+    }
+  }
+  .ant-menu-item .sider-menu-item-img + span,
+  .ant-menu-submenu-title .sider-menu-item-img + span {
+    transition: opacity 0.3s @ease-in-out, width 0.3s @ease-in-out;
+    opacity: 1;
   }
 }

@@ -1,12 +1,11 @@
-import { componentList, componentInfo, componentRemove, componentAdd } from '../services/api';
-import {arrToTree, uuid} from '../utils/utils.js';
+import http from '@/common/request';
+import { arrToTree, uuid } from '../utils/utils.js';
 import _ from 'lodash';
 const initState = {
-  loading: false,
   data: {
     list: [],
     treeData: [],
-    pagination: {},
+    pagination: {}
   },
   info: {
     id: '',
@@ -17,7 +16,7 @@ const initState = {
     label: '',
     desc: '',
     template: '',
-    extra_field: [],
+    extra_field: []
   }
 };
 
@@ -28,123 +27,97 @@ export default {
 
   effects: {
     *list({ payload }, { call, put }) {
-      yield put({
-        type: 'loading',
-        payload: true,
-      });
-      const response = yield call(componentList, payload);
+      const response = yield call(http.componentList, payload);
       response.data.list.forEach(item => {
         item.value = '' + item.name;
         item.key = uuid();
         item.title = item.label || item.name;
-      })
+      });
 
       response.data.treeData = arrToTree(response.data.list, 'id', 'pid', '0');
       yield put({
         type: 'save',
-        payload: response.data,
-      });
-      yield put({
-        type: 'loading',
-        payload: false,
+        payload: response.data
       });
     },
-    *info({payload}, {call, put}) {
-      yield put({
-        type: 'loading',
-        payload: true,
-      });
+    *info({ payload }, { call, put }) {
       yield put({
         type: 'reset',
         payload: {
-          type: 'info',
+          type: 'info'
         }
       });
-      if(payload.id == 0){
-         return ;
+      if (payload.id == 0) {
+        return;
       }
-      const response = yield call(componentInfo, payload);
+      const response = yield call(http.componentInfo, payload);
 
       yield put({
         type: 'saveInfo',
-        payload: response.data,
-      });
-      yield put({
-        type: 'loading',
-        payload: false,
+        payload: response.data
       });
     },
     *add({ payload, callback }, { call, put }) {
-      const response = yield call(componentAdd, payload);
+      const response = yield call(http.componentAdd, payload, {
+        method: 'post'
+      });
       yield put({
         type: 'save',
-        payload: response.data,
+        payload: response.data
       });
       if (callback) callback();
     },
     *remove({ payload, callback }, { call, put }) {
-      yield put({
-        type: 'loading',
-        payload: true,
+      const response = yield call(http.componentRemove, payload, {
+        method: 'post'
       });
-      const response = yield call(componentRemove, payload);
       yield put({
         type: 'removeItems',
-        payload: payload,
-      });
-      yield put({
-        type: 'loading',
-        payload: false,
+        payload: payload
       });
 
       if (callback) callback();
-    },
+    }
   },
 
   reducers: {
     save(state, action) {
       return {
         ...state,
-        data: action.payload,
+        data: action.payload
       };
     },
-    saveInfo(state, action){
+    saveInfo(state, action) {
       return {
         ...state,
-        info: action.payload,
-      }
+        info: action.payload
+      };
     },
-    removeItems(state, action){
+    removeItems(state, action) {
       const data = state.data;
       data.list = data.list.filter(item => action.payload.id.indexOf(item.id) == -1);
       return {
         ...state,
-        data: data,
-      }
+        data: data
+      };
     },
-    loading(state, action){
-      return {
-        ...state,
-        loading: action.payload,
-      }
-    },
-    reset(state, action){
+    reset(state, action) {
       const type = action.payload.type;
-      if(type == 'list'){
+      if (type == 'list') {
         return {
           ...state,
-          data: _.cloneDeep(initState.data),
+          data: _.cloneDeep(initState.data)
         };
-      }else if(type == 'info'){
+      } else if (type == 'info') {
         return {
           ...state,
-          info: _.cloneDeep(initState.info),
+          info: _.cloneDeep(initState.info)
         };
-      }else{
+      } else {
         return {
-          ...initState,
+          ...initState
         };
       }
-    },
-  },
+    }
+  }
 };

@@ -1,49 +1,46 @@
-import { previewApp, previewPage, preview } from '../services/api';
+import http from '@/common/request';
 
 export default {
   namespace: 'preview',
 
   state: {
     pagePreviewLoading: false,
-    data: {
-
-    },
-
+    data: {}
   },
 
   effects: {
-    *page({payload, callback}, {call, put}){
+    *page({ payload, callback }, { call, put }) {
       yield put({
         type: 'pagePreviewLoading',
-        payload: true,
+        payload: true
       });
-      const response = yield call(previewPage, payload);
+      const response = yield call(http.previewPage, payload);
       yield put({
         type: 'pagePreviewLoading',
-        payload: false,
+        payload: false
       });
       if (callback) callback();
     },
-    *preview({payload, callback}, {call, put}){
+    *preview({ payload, callback }, { call, put }) {
       yield put({
         type: 'pagePreviewLoading',
-        payload: true,
+        payload: true
       });
-      const response = yield call(preview, payload);
+      const response = yield call(http.preview, payload);
       yield put({
         type: 'pagePreviewLoading',
-        payload: false,
+        payload: false
       });
       if (callback) callback();
     }
   },
 
   reducers: {
-    pagePreviewLoading(state, action){
+    pagePreviewLoading(state, action) {
       return {
         ...state,
-        pagePreviewLoading: action.payload,
-      }
+        pagePreviewLoading: action.payload
+      };
     }
-  },
+  }
 };

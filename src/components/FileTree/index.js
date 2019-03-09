@@ -1,3 +1,4 @@
+import React from 'react';
 import {
   Popconfirm,
   Form,
@@ -18,7 +19,6 @@ const Option = Select.Option;
 const { TextArea } = Input;
 const TreeNode = TreeSelect.TreeNode;
 
-
 export default class FileTree extends React.Component {
   constructor(props) {
     super(props);
@@ -26,47 +26,40 @@ export default class FileTree extends React.Component {
     this.state = {
       isShowTemplateModal: false,
       treeData: [],
-      value: undefined,
+      value: undefined
     };
   }
-  componentWillReceiveProps(nextProps) {
-
-  }
-  componentDidMount(){
-
-  }
-  componentWillUnmount(){
-
-  }
-  loadData = (treeNode) => {
+  componentWillReceiveProps(nextProps) {}
+  componentDidMount() {}
+  componentWillUnmount() {}
+  loadData = treeNode => {
     return this.props.onLoadData(treeNode);
-  }
-  onChange = (value) => {
+  };
+  onChange = value => {
     this.props.onChange(value);
-  }
+  };
   onSelect = (value, node, extra) => {
     let data = node.props.dataRef;
 
-    if(data.isLeaf){
+    if (data.isLeaf) {
       this.props.onSelect(value, data, extra);
     }
-  }
-  onLoadData = (treeNode) => {
-    return new Promise((resolve) => {
-      this.props.onLoadData(treeNode.props.dataRef)
-      .then(data => {
+  };
+  onLoadData = treeNode => {
+    return new Promise(resolve => {
+      this.props.onLoadData(treeNode.props.dataRef).then(data => {
         treeNode.props.dataRef.children = data;
         this.setState({
-          treeData: [...this.state.treeData],
+          treeData: [...this.state.treeData]
         });
         resolve();
       });
     });
-  }
-  renderTreeNodes = (data) => {
-    return data.map((item) => {
+  };
+  renderTreeNodes = data => {
+    return data.map(item => {
       if (item.children) {
-        console.log('key', item.key)
+        console.log('key', item.key);
 
         return (
           <TreeNode title={item.title} key={item.key} dataRef={item}>
@@ -76,7 +69,7 @@ export default class FileTree extends React.Component {
       }
       return <TreeNode {...item} dataRef={item} key={item.key} />;
     });
-  }
+  };
   render() {
     let treeData = this.props.treeData;
     return (
@@ -86,7 +79,7 @@ export default class FileTree extends React.Component {
           value={this.state.value}
           dropdownStyle={{ maxHeight: 400, overflow: 'auto' }}
           placeholder="请选择添加模版文件"
-          loadData={(node) => this.onLoadData(node)}
+          loadData={node => this.onLoadData(node)}
           onSelect={this.onSelect}
         >
           {this.renderTreeNodes(treeData)}
