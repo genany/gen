@@ -1,6 +1,11 @@
 {
-  "extends": "stylelint-config-standard",
+  "extends": [
+    "stylelint-config-prettier",
+    "stylelint-config-standard",
+    "./node_modules/prettier-stylelint/config.js"
+  ],
   "rules": {
+    "indentation": 2,
     "selector-pseudo-class-no-unknown": null,
     "shorthand-property-no-redundant-values": null,
     "at-rule-empty-line-before": null,
@@ -13,10 +18,12 @@
     "function-parentheses-newline-inside": null,
     "function-max-empty-lines": null,
     "function-whitespace-after": null,
+    "no-missing-end-of-source-newline": null,
     "number-leading-zero": null,
     "number-no-trailing-zeros": null,
     "rule-empty-line-before": null,
     "selector-combinator-space-after": null,
+    "selector-descendant-combinator-no-non-space": null,
     "selector-list-comma-newline-after": null,
     "selector-pseudo-element-colon-notation": null,
     "unit-no-unknown": null,
