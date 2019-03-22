@@ -2,23 +2,9 @@ import React, { PureComponent } from 'react';
 import { connect } from 'dva';
 import { routerRedux } from 'dva/router';
 import { Link } from 'react-router-dom';
-import {
-  Tree,
-  Divider,
-  Popconfirm,
-  message,
-  Form,
-  Input,
-  Select,
-  Button,
-  Card
-} from 'antd';
+import { Tree, Divider, Popconfirm, message, Form, Input, Select, Button, Card } from 'antd';
 import { setToEn, zh2En } from '../../utils/utils.js';
-import {
-  formItemLayout,
-  submitFormLayout,
-  formItemLayoutFull
-} from '../../utils/formLayout.js';
+import { formItemLayout, submitFormLayout, formItemLayoutFull } from '../../utils/formLayout.js';
 
 const TreeNode = Tree.TreeNode;
 const FormItem = Form.Item;
@@ -126,10 +112,11 @@ export default class Add extends PureComponent {
         this.props.dispatch({
           type: 'app/add',
           payload: payload,
-          callback: () => {
-            message.success('保存成功');
-
-            this.props.dispatch(routerRedux.push('/app/list'));
+          callback: resData => {
+            if (resData.code === 200) {
+              message.success('保存成功');
+              this.props.dispatch(routerRedux.push('/app/list'));
+            }
           }
         });
       }
@@ -167,10 +154,7 @@ export default class Add extends PureComponent {
           </Button>
         </Link>
         <Divider type="vertical" />
-        <Popconfirm
-          title="确认删除吗？"
-          onConfirm={() => this.onDeleteNode(11)}
-        >
+        <Popconfirm title="确认删除吗？" onConfirm={() => this.onDeleteNode(11)}>
           <Button size="small" type="danger">
             删除
           </Button>
@@ -222,10 +206,7 @@ export default class Add extends PureComponent {
           添加子页面
         </Button>
         <Divider type="vertical" />
-        <Popconfirm
-          title="确认删除吗？"
-          onConfirm={() => this.onDeleteNode(item.id, arr)}
-        >
+        <Popconfirm title="确认删除吗？" onConfirm={() => this.onDeleteNode(item.id, arr)}>
           <Button size="small" type="danger">
             删除
           </Button>
@@ -238,21 +219,13 @@ export default class Add extends PureComponent {
       index = index || 'page-';
       if (item.children) {
         return (
-          <TreeNode
-            title={this.renderNode(item, data)}
-            key={index + '-' + item.id}
-            dataRef={item}
-          >
+          <TreeNode title={this.renderNode(item, data)} key={index + '-' + item.id} dataRef={item}>
             {this.renderTreeNodes(item.children)}
           </TreeNode>
         );
       }
       return (
-        <TreeNode
-          title={this.renderNode(item, data)}
-          key={index + '-' + item.id}
-          dataRef={item}
-        />
+        <TreeNode title={this.renderNode(item, data)} key={index + '-' + item.id} dataRef={item} />
       );
     });
   };
@@ -271,11 +244,7 @@ export default class Add extends PureComponent {
 
     return (
       <Card bordered={false}>
-        <Form
-          onSubmit={this.handleSubmit}
-          hideRequiredMark
-          style={{ marginTop: 8 }}
-        >
+        <Form onSubmit={this.handleSubmit} hideRequiredMark style={{ marginTop: 8 }}>
           <FormItem {...formItemLayout} label="中文名称：">
             {getFieldDecorator('label', {
               initialValue: info.label,
@@ -389,11 +358,7 @@ export default class Add extends PureComponent {
             <Button onClick={() => this.addPage(0)} size="small" type="primary">
               添加页面
             </Button>
-            <Tree
-              showLine
-              defaultExpandedKeys={['0-0-0']}
-              onSelect={this.onSelect}
-            >
+            <Tree showLine defaultExpandedKeys={['0-0-0']} onSelect={this.onSelect}>
               {this.renderTreeNodes(pageTreeData)}
             </Tree>
           </FormItem>
@@ -402,10 +367,7 @@ export default class Add extends PureComponent {
             <Button type="primary" htmlType="submit" loading={submitting}>
               保存
             </Button>
-            <Popconfirm
-              title="修改不会保存，确认取消吗？"
-              onConfirm={this.cancel}
-            >
+            <Popconfirm title="修改不会保存，确认取消吗？" onConfirm={this.cancel}>
               <Button type="danger" style={{ marginLeft: 16 }}>
                 取消
               </Button>

@@ -23,14 +23,18 @@ export default {
   state: _.cloneDeep(initState),
 
   effects: {
-    *list({ payload }, { call, put }) {
-      const response = yield call(http.validList, payload);
-      yield put({
-        type: 'save',
-        payload: response.data
-      });
+    *list({ payload, callback }, { call, put }) {
+      const resData = yield call(http.validList, payload);
+      if (resData.code === 200) {
+        yield put({
+          type: 'save',
+          payload: resData.data
+        });
+      }
+
+      if (callback) callback(resData);
     },
-    *info({ payload }, { call, put }) {
+    *info({ payload, callback }, { call, put }) {
       yield put({
         type: 'reset',
         payload: {
@@ -40,29 +44,38 @@ export default {
       if (payload.id == 0) {
         return;
       }
-      const response = yield call(http.validInfo, payload);
-      yield put({
-        type: 'saveInfo',
-        payload: response.data
-      });
+      const resData = yield call(http.validInfo, payload);
+
+      if (resData.code === 200) {
+        yield put({
+          type: 'saveInfo',
+          payload: resData.data
+        });
+      }
+
+      if (callback) callback(resData);
     },
     *add({ payload, callback }, { call, put }) {
-      const response = yield call(http.validAdd, payload, { method: 'post' });
-      yield put({
-        type: 'save',
-        payload: response.data
-      });
-      if (callback) callback();
+      const resData = yield call(http.validAdd, payload, { method: 'post' });
+      if (resData.code === 200) {
+        yield put({
+          type: 'save',
+          payload: resData.data
+        });
+      }
+      if (callback) callback(resData);
     },
     *remove({ payload, callback }, { call, put }) {
-      const response = yield call(http.validRemove, payload, {
+      const resData = yield call(http.validRemove, payload, {
         method: 'post'
       });
-      yield put({
-        type: 'removeItems',
-        payload: payload
-      });
-      if (callback) callback();
+      if (resData.code === 200) {
+        yield put({
+          type: 'removeItems',
+          payload: payload
+        });
+      }
+      if (callback) callback(resData);
     }
   },
 
@@ -81,9 +94,7 @@ export default {
     },
     removeItems(state, action) {
       const data = state.data;
-      data.list = data.list.filter(
-        item => action.payload.id.indexOf(item.id) === -1
-      );
+      data.list = data.list.filter(item => action.payload.id.indexOf(item.id) === -1);
       return {
         ...state,
         data: data

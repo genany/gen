@@ -67,10 +67,11 @@ export default class Add extends PureComponent {
         this.props.dispatch({
           type: 'layout/add',
           payload: payload,
-          callback: () => {
-            message.success('保存成功');
-
-            this.props.dispatch(routerRedux.push('/layout/list'));
+          callback: resData => {
+            if (resData.code === 200) {
+              message.success('保存成功');
+              this.props.dispatch(routerRedux.push('/layout/list'));
+            }
           }
         });
       }
@@ -89,11 +90,7 @@ export default class Add extends PureComponent {
 
     return (
       <Card bordered={false}>
-        <Form
-          onSubmit={this.handleSubmit}
-          hideRequiredMark
-          style={{ marginTop: 8 }}
-        >
+        <Form onSubmit={this.handleSubmit} hideRequiredMark style={{ marginTop: 8 }}>
           <FormItem {...formItemLayout} label="脚手架：">
             {getFieldDecorator('scaffold_id', {
               initialValue: info.scaffold_id,
@@ -146,10 +143,7 @@ export default class Add extends PureComponent {
             <Button type="primary" htmlType="submit" loading={submitting}>
               保存
             </Button>
-            <Popconfirm
-              title="修改不会保存，确认取消吗？"
-              onConfirm={this.cancel}
-            >
+            <Popconfirm title="修改不会保存，确认取消吗？" onConfirm={this.cancel}>
               <Button type="danger" style={{ marginLeft: 16 }}>
                 取消
               </Button>

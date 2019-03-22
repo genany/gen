@@ -79,10 +79,11 @@ export default class Add extends PureComponent {
         this.props.dispatch({
           type: 'inter/add',
           payload: payload,
-          callback: () => {
-            message.success('保存成功');
-
-            this.props.dispatch(routerRedux.push('/inter/list'));
+          callback: resData => {
+            if (resData.code === 200) {
+              message.success('保存成功');
+              this.props.dispatch(routerRedux.push('/inter/list'));
+            }
           }
         });
       }

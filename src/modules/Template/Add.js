@@ -1,17 +1,7 @@
 import React, { PureComponent } from 'react';
 import { connect } from 'dva';
 import { routerRedux } from 'dva/router';
-import {
-  Row,
-  Col,
-  message,
-  Popconfirm,
-  Form,
-  Input,
-  Select,
-  Button,
-  Card
-} from 'antd';
+import { Row, Col, message, Popconfirm, Form, Input, Select, Button, Card } from 'antd';
 
 import CodeArea from '../../components/CodeArea';
 import FileTree from '../../components/FileTree';
@@ -81,10 +71,11 @@ export default class Add extends PureComponent {
         this.props.dispatch({
           type: 'template/add',
           payload: payload,
-          callback: () => {
-            message.success('保存成功');
-
-            this.props.dispatch(routerRedux.push('/template/list'));
+          callback: resData => {
+            if (resData.code === 200) {
+              message.success('保存成功');
+              this.props.dispatch(routerRedux.push('/template/list'));
+            }
           }
         });
       }
@@ -97,8 +88,7 @@ export default class Add extends PureComponent {
   getSubFiles = node => {
     return new Promise((resolve, reject) => {
       let scaffoldId =
-        this.props.form.getFieldValue('scaffold_id') ||
-        this.props.template.info.scaffold_id;
+        this.props.form.getFieldValue('scaffold_id') || this.props.template.info.scaffold_id;
       if (!scaffoldId) {
         message.warning('请选择脚手架');
         return;
@@ -155,8 +145,7 @@ export default class Add extends PureComponent {
 
   changeTempalte = filePath => {
     let scaffoldId =
-      this.props.form.getFieldValue('scaffold_id') ||
-      this.props.template.info.scaffold_id;
+      this.props.form.getFieldValue('scaffold_id') || this.props.template.info.scaffold_id;
     if (!scaffoldId) {
       message.warning('请选择脚手架');
       return;
@@ -193,11 +182,7 @@ export default class Add extends PureComponent {
 
     return extra_field.map((item, index) => {
       return (
-        <FormItem
-          key={item.key}
-          {...formItemLayoutFull}
-          label={'扩展字段' + (index + 1)}
-        >
+        <FormItem key={item.key} {...formItemLayoutFull} label={'扩展字段' + (index + 1)}>
           <Row gutter={16}>
             <Col className="gutter-row" span={8}>
               <Input
@@ -281,11 +266,7 @@ export default class Add extends PureComponent {
 
     return (
       <Card bordered={false}>
-        <Form
-          onSubmit={this.handleSubmit}
-          hideRequiredMark
-          style={{ marginTop: 8 }}
-        >
+        <Form onSubmit={this.handleSubmit} hideRequiredMark style={{ marginTop: 8 }}>
           <FormItem {...formItemLayout} label="脚手架：">
             {getFieldDecorator('scaffold_id', {
               initialValue: info.scaffold_id,
@@ -387,10 +368,7 @@ export default class Add extends PureComponent {
             <Button type="primary" htmlType="submit" loading={submitting}>
               保存
             </Button>
-            <Popconfirm
-              title="修改不会保存，确认取消吗？"
-              onConfirm={this.cancel}
-            >
+            <Popconfirm title="修改不会保存，确认取消吗？" onConfirm={this.cancel}>
               <Button type="danger" style={{ marginLeft: 16 }}>
                 取消
               </Button>

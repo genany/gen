@@ -23,7 +23,6 @@ app.use(createLoading());
 
 app.model(require('./models/global').default);
 app.model(require('./models/app').default);
-app.model(require('./models/chart').default);
 app.model(require('./models/template').default);
 app.model(require('./models/component').default);
 app.model(require('./models/inter').default);

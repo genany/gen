@@ -26,21 +26,26 @@ export default {
   state: _.cloneDeep(initState),
 
   effects: {
-    *list({ payload }, { call, put }) {
-      const response = yield call(http.componentList, payload);
-      response.data.list.forEach(item => {
-        item.value = '' + item.name;
-        item.key = uuid();
-        item.title = item.label || item.name;
-      });
+    *list({ payload, callback }, { call, put }) {
+      const resData = yield call(http.componentList, payload);
 
-      response.data.treeData = arrToTree(response.data.list, 'id', 'pid', '0');
-      yield put({
-        type: 'save',
-        payload: response.data
-      });
+      if (resData.code === 200) {
+        resData.data.list.forEach(item => {
+          item.value = '' + item.name;
+          item.key = uuid();
+          item.title = item.label || item.name;
+        });
+
+        resData.data.treeData = arrToTree(resData.data.list, 'id', 'pid', '0');
+        yield put({
+          type: 'save',
+          payload: resData.data
+        });
+      }
+
+      if (callback) callback(resData);
     },
-    *info({ payload }, { call, put }) {
+    *info({ payload, callback }, { call, put }) {
       yield put({
         type: 'reset',
         payload: {
@@ -50,33 +55,44 @@ export default {
       if (payload.id == 0) {
         return;
       }
-      const response = yield call(http.componentInfo, payload);
+      const resData = yield call(http.componentInfo, payload);
 
-      yield put({
-        type: 'saveInfo',
-        payload: response.data
-      });
+      if (resData.code === 200) {
+        yield put({
+          type: 'saveInfo',
+          payload: resData.data
+        });
+      }
+
+      if (callback) callback(resData);
     },
     *add({ payload, callback }, { call, put }) {
-      const response = yield call(http.componentAdd, payload, {
+      const resData = yield call(http.componentAdd, payload, {
         method: 'post'
-      });
-      yield put({
-        type: 'save',
-        payload: response.data
-      });
-      if (callback) callback();
-    },
-    *remove({ payload, callback }, { call, put }) {
-      const response = yield call(http.componentRemove, payload, {
-        method: 'post'
-      });
-      yield put({
-        type: 'removeItems',
-        payload: payload
       });
 
-      if (callback) callback();
+      if (resData.code === 200) {
+        yield put({
+          type: 'save',
+          payload: resData.data
+        });
+      }
+
+      if (callback) callback(resData);
+    },
+    *remove({ payload, callback }, { call, put }) {
+      const resData = yield call(http.componentRemove, payload, {
+        method: 'post'
+      });
+
+      if (resData.code === 200) {
+        yield put({
+          type: 'removeItems',
+          payload: payload
+        });
+      }
+
+      if (callback) callback(resData);
     }
   },
 

@@ -9,7 +9,7 @@ import MyList from '../../components/List';
 @connect(({ global, app, loading }) => ({
   global,
   app,
-  loading: loading.effects['app/getList']
+  loading: loading.effects['app/list']
 }))
 export default class List extends MyList {
   modeName = 'app';

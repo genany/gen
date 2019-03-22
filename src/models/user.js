@@ -13,20 +13,20 @@ export default {
   },
 
   effects: {
-    *fetch(_, { call, put }) {
-      const response = yield call(http.queryUsers);
-      yield put({
-        type: 'save',
-        payload: response.data
-      });
-    },
-    *fetchCurrent(_, { call, put }) {
-      const response = yield call(http.queryCurrent);
-      yield put({
-        type: 'saveCurrentUser',
-        payload: response.data
-      });
-    },
+    // * fetch (_, { call, put }) {
+    //   const resData = yield call(http.queryUsers)
+    //   yield put({
+    //     type: 'save',
+    //     payload: resData.data
+    //   })
+    // },
+    // * fetchCurrent (_, { call, put }) {
+    //   const resData = yield call(http.queryCurrent)
+    //   yield put({
+    //     type: 'saveCurrentUser',
+    //     payload: resData.data
+    //   })
+    // },
     *getUserInfo({ payload, callback }, { call, put, select }) {
       const res = yield call(http.getUserInfo, payload);
       if (res.code === 200) {

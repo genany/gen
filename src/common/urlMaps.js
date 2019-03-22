@@ -20,6 +20,8 @@ const urlMaps = {
   scaffoldInfo: `/api/scaffold/info`,
   scaffoldRemove: `/api/scaffold/remove`,
   scaffoldAdd: `/api/scaffold/save`,
+  upload: `/api/scaffold/upload`,
+  pullCode: `/api/scaffold/pullCode`,
   interAppList: `/api/interapp/page`,
   interAppInfo: `/api/interapp/info`,
   interAppRemove: `/api/interapp/remove`,

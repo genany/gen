@@ -1,25 +1,12 @@
 import React, { PureComponent } from 'react';
 import { connect } from 'dva';
 import { routerRedux } from 'dva/router';
-import {
-  message,
-  Popconfirm,
-  Form,
-  Input,
-  Select,
-  Button,
-  Card,
-  Radio
-} from 'antd';
+import { message, Popconfirm, Form, Input, Select, Button, Card, Radio } from 'antd';
 
 import CodeArea from '../../components/CodeArea';
 import ExtraField from '../../components/ExtraField';
 import { setToEn } from '../../utils/utils.js';
-import {
-  formItemLayout,
-  submitFormLayout,
-  formItemLayoutFull
-} from '../../utils/formLayout.js';
+import { formItemLayout, submitFormLayout, formItemLayoutFull } from '../../utils/formLayout.js';
 
 const FormItem = Form.Item;
 const { Option } = Select;
@@ -61,10 +48,11 @@ export default class Add extends PureComponent {
         this.props.dispatch({
           type: 'component/add',
           payload: payload,
-          callback: () => {
-            message.success('保存成功');
-
-            this.props.dispatch(routerRedux.push('/component/list'));
+          callback: resData => {
+            if (resData.code === 200) {
+              message.success('保存成功');
+              this.props.dispatch(routerRedux.push('/component/list'));
+            }
           }
         });
       }
@@ -83,11 +71,7 @@ export default class Add extends PureComponent {
 
     return (
       <Card bordered={false}>
-        <Form
-          onSubmit={this.handleSubmit}
-          hideRequiredMark
-          style={{ marginTop: 8 }}
-        >
+        <Form onSubmit={this.handleSubmit} hideRequiredMark style={{ marginTop: 8 }}>
           <FormItem {...formItemLayout} label="父组件：">
             {getFieldDecorator('pid', {
               initialValue: info.pid || ''
@@ -175,10 +159,7 @@ export default class Add extends PureComponent {
             <Button type="primary" htmlType="submit" loading={submitting}>
               保存
             </Button>
-            <Popconfirm
-              title="修改不会保存，确认取消吗？"
-              onConfirm={this.cancel}
-            >
+            <Popconfirm title="修改不会保存，确认取消吗？" onConfirm={this.cancel}>
               <Button type="danger" style={{ marginLeft: 16 }}>
                 取消
               </Button>

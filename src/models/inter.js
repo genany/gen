@@ -54,12 +54,16 @@ export default {
 
   effects: {
     *list({ payload, callback }, { call, put }) {
-      const response = yield call(http.interList, payload);
-      yield put({
-        type: 'save',
-        payload: response.data
-      });
-      if (callback) callback(response);
+      const resData = yield call(http.interList, payload);
+
+      if (resData.code === 200) {
+        yield put({
+          type: 'save',
+          payload: resData.data
+        });
+      }
+
+      if (callback) callback(resData);
     },
     *info({ payload, callback }, { call, put }) {
       yield put({
@@ -71,31 +75,42 @@ export default {
       if (payload.id == 0) {
         return;
       }
-      const response = yield call(http.interInfo, payload);
-      yield put({
-        type: 'saveInfo',
-        payload: response.data
-      });
-      if (callback) callback(response);
+      const resData = yield call(http.interInfo, payload);
+
+      if (resData.code === 200) {
+        yield put({
+          type: 'saveInfo',
+          payload: resData.data
+        });
+      }
+
+      if (callback) callback(resData);
     },
     *add({ payload, callback }, { call, put }) {
-      const response = yield call(http.interAdd, payload, { method: 'post' });
-      yield put({
-        type: 'save',
-        payload: response.data
-      });
-      if (callback) callback(response);
+      const resData = yield call(http.interAdd, payload, { method: 'post' });
+
+      if (resData.code === 200) {
+        yield put({
+          type: 'save',
+          payload: resData.data
+        });
+      }
+
+      if (callback) callback(resData);
     },
     *remove({ payload, callback }, { call, put }) {
-      const response = yield call(http.interRemove, payload, {
+      const resData = yield call(http.interRemove, payload, {
         method: 'post'
       });
-      yield put({
-        type: 'removeItems',
-        payload: payload
-      });
 
-      if (callback) callback(response);
+      if (resData.code === 200) {
+        yield put({
+          type: 'removeItems',
+          payload: payload
+        });
+      }
+
+      if (callback) callback(resData);
     }
   },
 

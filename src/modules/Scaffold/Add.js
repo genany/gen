@@ -9,16 +9,16 @@ import {
   Input,
   Button,
   Card,
-  Icon
+  Icon,
+  Radio,
+  Row,
+  Col
 } from 'antd';
+import urlMaps from '../../common/urlMaps';
 
 import ExtraTemplate from '../../components/ExtraTemplate';
 import { setToEn } from '../../utils/utils.js';
-import {
-  formItemLayout,
-  submitFormLayout,
-  formItemLayoutFull
-} from '../../utils/formLayout.js';
+import { formItemLayout, submitFormLayout, formItemLayoutFull } from '../../utils/formLayout.js';
 
 const Dragger = Upload.Dragger;
 const FormItem = Form.Item;
@@ -27,13 +27,16 @@ const { TextArea } = Input;
 
 @connect(({ scaffold, loading }) => ({
   scaffold: scaffold,
-  submitting: loading.effects['scaffold/add']
+  submitting: loading.effects['scaffold/add'],
+  pullCoding: loading.effects['scaffold/pullCode']
 }))
 @Form.create()
 export default class Add extends PureComponent {
   state = {
     scaffoldFiles: [],
-    files: []
+    files: [],
+    scaffoldDir: '',
+    scaffoldType: ''
   };
   componentWillReceiveProps(nextProps) {}
   componentDidMount() {
@@ -60,9 +63,11 @@ export default class Add extends PureComponent {
         this.props.dispatch({
           type: 'scaffold/add',
           payload: payload,
-          callback: () => {
-            message.success('保存成功');
-            this.props.dispatch(routerRedux.push('/scaffold/list'));
+          callback: resData => {
+            if (resData.code === 200) {
+              message.success('保存成功');
+              this.props.dispatch(routerRedux.push('/scaffold/list'));
+            }
           }
         });
       }
@@ -75,37 +80,70 @@ export default class Add extends PureComponent {
     message.warning('开发中');
   };
   changeFile = node => {};
+  getCsrf = () => {
+    var keyValue = document.cookie.match('(^|;) ?csrfToken=([^;]*)(;|$)');
+    return keyValue ? keyValue[2] : null;
+  };
+  getUploadProps = () => {
+    return {
+      name: 'file',
+      multiple: false,
+      accept: '.zip',
+      action: urlMaps.upload + '?_csrf=' + this.getCsrf(),
+      onChange: info => {
+        const status = info.file.status;
+        if (status !== 'uploading') {
+          console.log(info.file, info.fileList);
+        }
+        if (status === 'done') {
+          const resData = info.file.response;
+          if (resData.code === 200) {
+            message.success(`${info.file.name} 上传成功`);
+            this.props.form.setFieldsValue({
+              file: resData.data.path
+            });
+            this.setState({ scaffoldDir: resData.data.path });
+          } else if (resData.code === 10013) {
+            message.error(resData.msg);
+          } else {
+            message.error(`${info.file.name} 上传失败`);
+          }
+        } else if (status === 'error') {
+          message.error(`${info.file.name} 上传失败`);
+        }
+      }
+    };
+  };
+  pullCode = () => {
+    const path = this.props.form.getFieldValue('path');
+    if (!path) {
+      message.warning('请输入git地址');
+      return;
+    }
+    this.props.dispatch({
+      type: 'scaffold/pullCode',
+      payload: {
+        path: path
+      },
+      callback: resData => {
+        if (resData.code === 200) {
+          message.success(`拉取成功`);
+          this.setState({ scaffoldDir: resData.data.path });
+        }
+      }
+    });
+  };
   render() {
     const {
       scaffold: { info },
       submitting
     } = this.props;
     const { getFieldDecorator } = this.props.form;
-
-    const props = {
-      name: 'file',
-      multiple: true,
-      action: '//jsonplaceholder.typicode.com/posts/',
-      onChange(info) {
-        const status = info.file.status;
-        if (status !== 'uploading') {
-          console.log(info.file, info.fileList);
-        }
-        if (status === 'done') {
-          message.success(`${info.file.name} file uploaded successfully.`);
-        } else if (status === 'error') {
-          message.error(`${info.file.name} file upload failed.`);
-        }
-      }
-    };
+    const scaffoldType = this.state.scaffoldType || info.type;
 
     return (
       <Card bordered={false}>
-        <Form
-          onSubmit={this.handleSubmit}
-          hideRequiredMark
-          style={{ marginTop: 8 }}
-        >
+        <Form onSubmit={this.handleSubmit} hideRequiredMark style={{ marginTop: 8 }}>
           <FormItem {...formItemLayout} label="中文名称：">
             {getFieldDecorator('label', {
               initialValue: info.label,
@@ -140,19 +178,59 @@ export default class Add extends PureComponent {
               initialValue: info.desc
             })(<TextArea placeholder="请输入简介" />)}
           </FormItem>
-          <FormItem {...formItemLayout} label="脚手架压缩包">
-            {getFieldDecorator('file', {
-              initialValue: info.file
+          <FormItem {...formItemLayout} label="脚手架类型：">
+            {getFieldDecorator('type', {
+              initialValue: info.type
             })(
-              <Dragger {...props}>
-                <p className="ant-upload-drag-icon">
-                  <Icon type="inbox" />
-                </p>
-                <p className="ant-upload-text">点击或拖拽到此区域上传</p>
-                <p className="ant-upload-hint">支持单个或批量上传</p>
-              </Dragger>
+              <Radio.Group
+                onChange={e => {
+                  this.setState({ scaffoldType: e.target.value });
+                }}
+                value={this.state.scaffoldType}
+              >
+                <Radio value={'zip'}>脚手架压缩包</Radio>
+                <Radio value={'git'}>git仓库</Radio>
+              </Radio.Group>
             )}
           </FormItem>
+          {scaffoldType === 'zip' && (
+            <FormItem {...formItemLayout} label="脚手架压缩包">
+              {getFieldDecorator('file', {
+                initialValue: info.file
+              })(
+                <Dragger {...this.getUploadProps()}>
+                  <p className="ant-upload-drag-icon">
+                    <Icon type="inbox" />
+                  </p>
+                  <p className="ant-upload-text">点击或拖拽到此区域上传</p>
+                  {/* <p className="ant-upload-hint">支持单个或批量上传</p> */}
+                </Dragger>
+              )}
+            </FormItem>
+          )}
+
+          {scaffoldType === 'git' && (
+            <FormItem {...formItemLayout} label="脚手架git地址">
+              <Row gutter={8}>
+                <Col span={18}>
+                  {getFieldDecorator('path', {
+                    initialValue: info.path
+                  })(<Input placeholder="请输入git地址" />)}
+                </Col>
+                <Col span={6}>
+                  <Button
+                    onClick={this.pullCode}
+                    ghost
+                    loading={this.props.pullCoding}
+                    type="primary"
+                  >
+                    拉取代码
+                  </Button>
+                </Col>
+              </Row>
+            </FormItem>
+          )}
+
           <FormItem {...formItemLayout} label="页面目录：">
             {getFieldDecorator('page_dir', {
               initialValue: info.page_dir,
@@ -176,121 +254,18 @@ export default class Add extends PureComponent {
             })(
               <ExtraTemplate
                 extra={info.extra_template}
-                scaffoldId={info.id}
+                scaffoldDir={this.state.scaffoldDir || info.file}
                 placeholder="请输入扩展模版"
                 dispatch={this.props.dispatch}
               />
             )}
           </FormItem>
-          {/* <FormItem {...formItemLayout} label="路由文件：">
-              {getFieldDecorator('router_file_path', {
-                initialValue: info.router_file_path,
-                 rules: [{
-                   required: true, message: '请输入路由文件',
-                 }],
-               })(
-                <Input placeholder="请输入路由文件" />
-              )}
-            </FormItem>
-            <FormItem {...formItemLayoutFull} label="路由模板：">
-              {getFieldDecorator('router_template', {
-                initialValue: info.router_template,
-                rules: [{
-                  required: true, message: '请输入路由模板',
-                }],
-              })(
-                <CodeArea placeholder="路由模板名称" />
-              )}
-            </FormItem>
-            <FormItem {...formItemLayout} label="菜单导航文件：">
-              {getFieldDecorator('menu_file_path', {
-                initialValue: info.menu_file_path,
-                 rules: [{
-                   required: true, message: '请输入菜单导航文件',
-                 }],
-               })(
-                <Input placeholder="请输入菜单导航文件" />
-              )}
-            </FormItem>
-            <FormItem {...formItemLayoutFull} label="菜单模板：">
-              {getFieldDecorator('menu_template', {
-                initialValue: info.menu_template,
-                rules: [{
-                  required: true, message: '请输入菜单模板',
-                }],
-              })(
-                <CodeArea placeholder="菜单模板名称" />
-              )}
-            </FormItem>
-            <FormItem {...formItemLayout} label="Store目录：">
-              {getFieldDecorator('store_dir', {
-                initialValue: info.store_dir,
-                 rules: [{
-                   required: true, message: '请输入Store目录',
-                 }],
-               })(
-                <Input placeholder="请输入Store目录" />
-              )}
-            </FormItem>
-            <FormItem {...formItemLayoutFull} label="Store模板：">
-              {getFieldDecorator('store_template', {
-                initialValue: info.store_template,
-                rules: [{
-                  required: true, message: '请输入Store模板',
-                }],
-              })(
-                <CodeArea placeholder="Data模板名称" />
-              )}
-            </FormItem>
-            <FormItem {...formItemLayout} label="页面目录：">
-              {getFieldDecorator('page_dir', {
-                initialValue: info.page_dir,
-                 rules: [{
-                   required: true, message: '请输入页面目录',
-                 }],
-               })(
-                <Input placeholder="请输入页面目录" />
-              )}
-            </FormItem>
-            <FormItem {...formItemLayout} label="Store目录：">
-              {getFieldDecorator('store_dir', {
-                initialValue: info.store_dir,
-                 rules: [{
-                   required: true, message: '请输入Store目录',
-                 }],
-               })(
-                <Input placeholder="请输入Store目录" />
-              )}
-            </FormItem>
-            <FormItem {...formItemLayout} label="Service模版：">
-              {getFieldDecorator('service_template', {
-                initialValue: info.service_template,
-                 rules: [{
-                   required: true, message: '输入Service模版',
-                 }],
-               })(
-                <CodeArea placeholder="输入Service模版" />
-              )}
-            </FormItem>
-            <FormItem {...formItemLayout} label="Service目录：">
-              {getFieldDecorator('service_dir', {
-                initialValue: info.service_dir,
-                 rules: [{
-                   required: true, message: '输入Service目录',
-                 }],
-               })(
-                <Input placeholder="请输入Service目录" />
-              )}
-            </FormItem> */}
 
           <FormItem {...submitFormLayout} style={{ marginTop: 32 }}>
             <Button type="primary" htmlType="submit" loading={submitting}>
               保存
             </Button>
-            <Popconfirm
-              title="修改不会保存，确认取消吗？"
-              onConfirm={this.cancel}
-            >
+            <Popconfirm title="修改不会保存，确认取消吗？" onConfirm={this.cancel}>
               <Button type="danger" style={{ marginLeft: 16 }}>
                 取消
               </Button>

@@ -16,16 +16,20 @@ export default {
   },
 
   effects: {
-    *getUserInfo({ payload }, { call, put, select }) {
-      const response = yield call(http.getUserInfo, payload);
-      console.log(response);
-      yield put({
-        type: 'userInfo',
-        payload: {
-          name: 'daycool',
-          email: 'qmw920@163.com'
-        }
-      });
+    *getUserInfo({ payload, callback }, { call, put, select }) {
+      const resData = yield call(http.getUserInfo, payload);
+
+      if (resData.code === 200) {
+        yield put({
+          type: 'userInfo',
+          payload: {
+            name: 'daycool',
+            email: 'qmw920@163.com'
+          }
+        });
+      }
+
+      if (callback) callback(resData);
     },
     *getLetterNav({ payload }, { call, put, select }) {
       const res = yield call(http.getLetterNav, payload);

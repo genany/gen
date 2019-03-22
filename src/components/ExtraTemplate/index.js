@@ -1,5 +1,5 @@
 import React from 'react';
-import { Popconfirm, Input, Icon, Row, Col } from 'antd';
+import { Popconfirm, message, Input, Icon, Row, Col } from 'antd';
 import { uuid } from '../../utils/utils.js';
 import { zh2En } from '../../utils/utils.js';
 import CodeArea from '../CodeArea';
@@ -15,27 +15,33 @@ export default class ExtraTemplate extends React.Component {
     this.state = {
       currExtra: null,
       extra: value,
-      files: []
+      files: [],
+      scaffoldDir: ''
     };
   }
-  componentWillReceiveProps(nextProps) {
+  componentWillReceiveProps(nextProps, prevProps) {
     if ('value' in nextProps) {
       this.setState({ extra: nextProps.value });
     }
+    if (nextProps.scaffoldDir && nextProps.scaffoldDir !== this.state.scaffoldDir) {
+      this.setState({ scaffoldDir: nextProps.scaffoldDir }, () => {
+        this.getSubFiles();
+      });
+    }
   }
   componentDidMount() {
-    setTimeout(() => {
-      this.getSubFiles();
-    }, 1000);
+    // if()
+    // this.getSubFiles()
   }
   componentWillUnmount() {}
 
   getSubFiles = node => {
+    if (!this.props.scaffoldDir) return;
     return new Promise((resolve, reject) => {
       this.props.dispatch({
         type: 'scaffold/files',
         payload: {
-          id: this.props.scaffoldId,
+          scaffoldDir: this.props.scaffoldDir,
           dir: node && node.fullName
         },
         callback: data => {
@@ -64,7 +70,11 @@ export default class ExtraTemplate extends React.Component {
       template: filePath
     };
 
-    extra.push(extraItem);
+    if (extra.filter(item => item.dir === extraItem.dir && item.name === extraItem.name).length) {
+      message.warning(`${file}模版已存在`);
+      return;
+    }
+    extra.unshift(extraItem);
     this.setState({
       extra: extra
     });
@@ -73,7 +83,7 @@ export default class ExtraTemplate extends React.Component {
     this.props.dispatch({
       type: 'scaffold/fileContent',
       payload: {
-        id: this.props.scaffoldId,
+        scaffoldDir: this.props.scaffoldDir,
         file: filePath
       },
       callback: data => {

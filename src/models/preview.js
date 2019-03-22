@@ -14,24 +14,28 @@ export default {
         type: 'pagePreviewLoading',
         payload: true
       });
-      const response = yield call(http.previewPage, payload);
+      const resData = yield call(http.previewPage, payload);
+      if (resData.code === 200) {
+      }
       yield put({
         type: 'pagePreviewLoading',
         payload: false
       });
-      if (callback) callback();
+
+      if (callback) callback(resData);
     },
     *preview({ payload, callback }, { call, put }) {
       yield put({
         type: 'pagePreviewLoading',
         payload: true
       });
-      const response = yield call(http.preview, payload);
+      const resData = yield call(http.preview, payload);
       yield put({
         type: 'pagePreviewLoading',
         payload: false
       });
-      if (callback) callback();
+
+      if (callback) callback(resData);
     }
   },
 

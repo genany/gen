@@ -8,7 +8,7 @@ import MyList from '../../components/List';
 @connect(({ global, layout, loading }) => ({
   global,
   layout,
-  loading: loading.effects['layout/getList']
+  loading: loading.effects['layout/list']
 }))
 export default class List extends MyList {
   modeName = 'layout';

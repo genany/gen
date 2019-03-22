@@ -8,7 +8,7 @@ import MyList from '../../components/List';
 @connect(({ global, scaffold, loading }) => ({
   global,
   scaffold,
-  loading: loading.effects['scaffold/getList']
+  loading: loading.effects['scaffold/list']
 }))
 export default class List extends MyList {
   modeName = 'scaffold';

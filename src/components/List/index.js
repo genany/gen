@@ -168,6 +168,7 @@ export default class List extends React.Component {
     if (data == null) {
       return <Spin />;
     }
+    console.log('TCL: getTable -> this.props.loading', this.props.loading);
 
     return (
       <SimpleTable
@@ -205,10 +206,7 @@ export default class List extends React.Component {
                     <Button type="primary" htmlType="submit">
                       查询
                     </Button>
-                    <Button
-                      style={{ marginLeft: 8 }}
-                      onClick={this.handleFormReset}
-                    >
+                    <Button style={{ marginLeft: 8 }} onClick={this.handleFormReset}>
                       重置
                     </Button>
                   </div>

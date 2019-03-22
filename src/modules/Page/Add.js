@@ -127,8 +127,8 @@ export default class Add extends PureComponent {
         this.props.dispatch({
           type: 'page/add',
           payload: payload,
-          callback: res => {
-            if (res.code === 200) {
+          callback: resData => {
+            if (resData.code === 200) {
               message.success('保存成功');
               this.nativeHandlePage(payload, 'save');
               this.props.dispatch(routerRedux.push('/page/list'));
@@ -250,32 +250,37 @@ export default class Add extends PureComponent {
             <TabPane tab="编辑" key="1">
               <Card bordered={false}>
                 <Form onSubmit={this.handleSubmit} hideRequiredMark style={{ marginTop: 8 }}>
-                  <FormItem {...formItemLayout} label="使用接口：">
-                    {getFieldDecorator('inter_id', {
-                      initialValue: info.inter_id,
-                      rules: [
-                        {
-                          required: true,
-                          message: '请选择接口'
-                        }
-                      ]
-                    })(
-                      <Select
-                        onChange={value => {
-                          this.selectInter(value);
-                        }}
-                        placeholder="选择接口自动生成"
-                      >
-                        {interData.list.map(item => {
-                          return (
-                            <Option value={item.id} key={item.id}>
-                              {item.label}
-                            </Option>
-                          );
-                        })}
-                      </Select>
-                    )}
-                  </FormItem>
+                  <Row gutter={24}>
+                    <Col span={24}>
+                      <FormItem {...formItemLayout} label="使用接口：">
+                        {getFieldDecorator('inter_id', {
+                          initialValue: info.inter_id,
+                          rules: [
+                            {
+                              required: true,
+                              message: '请选择接口'
+                            }
+                          ]
+                        })(
+                          <Select
+                            onChange={value => {
+                              this.selectInter(value);
+                            }}
+                            placeholder="选择接口自动生成"
+                          >
+                            {interData.list.map(item => {
+                              return (
+                                <Option value={item.id} key={item.id}>
+                                  {item.label}
+                                </Option>
+                              );
+                            })}
+                          </Select>
+                        )}
+                      </FormItem>
+                    </Col>
+                  </Row>
+
                   <Row gutter={24}>
                     <Col span={8}>
                       <FormItem {...formItemPageLayout} label="所属App：">

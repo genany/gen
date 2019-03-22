@@ -75,34 +75,40 @@ export default {
 
   effects: {
     *files({ payload, callback }, { call, put }) {
-      const response = yield call(getScaffoldFiles, payload);
-      // response.key = payload.key
-      response.data.list.forEach(item => {
-        item.value = '' + item.name;
-        item.key = uuid();
-        item.title = item.label || item.name;
-        if (!item.isFile) {
-          item.children = [];
-        } else {
-          item.isLeaf = true;
-        }
-      });
-      console.log(response.data.list);
-      if (callback) callback(response.data.list);
+      const resData = yield call(getScaffoldFiles, payload);
+      // resData.key = payload.key
+      if (resData.code === 200) {
+        resData.data.list.forEach(item => {
+          item.value = '' + item.name;
+          item.key = uuid();
+          item.title = item.label || item.name;
+          if (!item.isFile) {
+            item.children = [];
+          } else {
+            item.isLeaf = true;
+          }
+        });
+      }
+      if (callback) callback(resData.data.list);
     },
     *fileContent({ payload, callback }, { call, put }) {
-      const response = yield call(getScaffoldFileContent, payload);
+      const resData = yield call(getScaffoldFileContent, payload);
 
-      if (callback) callback(response.data);
+      if (callback) callback(resData.data);
     },
-    *list({ payload }, { call, put }) {
-      const response = yield call(http.scaffoldList, payload);
-      yield put({
-        type: 'save',
-        payload: response.data
-      });
+    *list({ payload, callback }, { call, put }) {
+      const resData = yield call(http.scaffoldList, payload);
+
+      if (resData.code === 200) {
+        yield put({
+          type: 'save',
+          payload: resData.data
+        });
+      }
+
+      if (callback) callback(resData);
     },
-    *info({ payload }, { call, put }) {
+    *info({ payload, callback }, { call, put }) {
       yield put({
         type: 'reset',
         payload: {
@@ -112,39 +118,53 @@ export default {
       if (payload.id == 0) {
         return;
       }
-      const response = yield call(http.scaffoldInfo, payload);
-      yield put({
-        type: 'saveInfo',
-        payload: response.data
-      });
+      const resData = yield call(http.scaffoldInfo, payload);
+
+      if (resData.code === 200) {
+        yield put({
+          type: 'saveInfo',
+          payload: resData.data
+        });
+      }
+
+      if (callback) callback(resData);
     },
     *add({ payload, callback }, { call, put }) {
-      const response = yield call(http.scaffoldAdd, payload, {
+      const resData = yield call(http.scaffoldAdd, payload, {
         method: 'post'
-      });
-      yield put({
-        type: 'removeItems',
-        payload: payload
-      });
-      if (callback) callback();
-    },
-    *remove({ payload, callback }, { call, put }) {
-      const response = yield call(http.scaffoldRemove, payload, {
-        method: 'post'
-      });
-      yield put({
-        type: 'removeItems',
-        payload: payload
       });
 
-      if (callback) callback();
+      if (resData.code === 200) {
+      }
+
+      if (callback) callback(resData);
+    },
+    *remove({ payload, callback }, { call, put }) {
+      const resData = yield call(http.scaffoldRemove, payload, {
+        method: 'post'
+      });
+
+      if (resData.code === 200) {
+        yield put({
+          type: 'removeItems',
+          payload: payload
+        });
+      }
+
+      if (callback) callback(resData);
+    },
+    *pullCode({ payload, callback }, { call, put }) {
+      const resData = yield call(http.pullCode, payload);
+
+      if (resData.code === 200) {
+      }
+
+      if (callback) callback(resData);
     }
   },
 
   reducers: {
     saveFiles(state, action) {
-      // response.data.treeData = arrToTree(response.data.list, 'id', 'pid', '0');
-
       return {
         ...state,
         files: {

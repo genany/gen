@@ -41,10 +41,11 @@ export default class BasicForms extends PureComponent {
         this.props.dispatch({
           type: 'valid/add',
           payload: payload,
-          callback: () => {
-            message.success('保存成功');
-
-            this.props.dispatch(routerRedux.push('/valid/list'));
+          callback: resData => {
+            if (resData.code === 200) {
+              message.success('保存成功');
+              this.props.dispatch(routerRedux.push('/valid/list'));
+            }
           }
         });
       }
