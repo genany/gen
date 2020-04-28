@@ -1,4 +1,4 @@
-### 本人准备换工作, 有合适的坑求内推, 坐标北京, QQ: 253568176
+### 本人准备换工作, 有合适的坑求内推, 坐标北京, 微信: 253568176
 
 
 如果您对此项目感兴趣欢迎 [star](https://github.com/genany/gen)，如果您对有问题和建议欢迎 [issues](https://github.com/genany/gen/issues/new)
